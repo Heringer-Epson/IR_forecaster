@@ -34,7 +34,7 @@ class Preproc_Data(object):
         
     def prepare_data(self, df):
         #Convert date column type to a datetime object.
-        df['date'] = pd.to_datetime(df['date'])
+        #df['date'] = [pd.to_datetime(df['date'])]
         #Trim the data to include only the time interval requested.
         if self.t_ival is not None:
             cond = ((df['date'] >= self.t_ival[0]) & (df['date'] <= self.t_ival[1]))
