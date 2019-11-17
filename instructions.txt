@@ -1,0 +1,49 @@
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-PROJECT OUTLINE=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+1) Download USD and CAD LIBOR data for multiple tenors from FRED’s web site
+
+2) Check data for gaps, sudden jumps and other data quality issues
+
+3) Plot time series of interbank rates (IRs) and their 1-day and 25-day increments using either xtspackage
+
+4) Plot histogram of IRs and their 1-day and 25-day increments, and fit several distributions
+to the histrograms. Which distributions does provide the best fit?
+
+5) Calculate and plot average term structure of LIBOR and its standard deviation.
+
+6) What is the relationship between standard deviation of the 1-day and 25-day IR increments?
+How does it depend on the increment time periods, i.e. 1-day and 25-days?
+Does this relationship depend on the increment tenor?
+
+7) Using corrplotpackage plot correlation matrix between various tenors of LIBOR 1-day
+and 25-day increments. What is the difference between correlation matrices for USD and CAD?
+
+8) Calculate and plot three first principal components of IR 1-day and 25-day increments.
+How much total variance do they explain?
+
+9) Using sdepackage fit Vasicektype model to each tenor of USD and CAD LIBOR.
+
+10) Combine the fitted Vasicekmodels by using correlated Brownian motions simulated using
+the first three principal components. Leverage Jamshidianand Zhu (1997) approach.
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-REFERENCES=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+Federal Reserve Bank of St. Louis Economic Data (FRED)
+
+1) https://fred.stlouisfed.org
+
+2) Jamshidianand Zhu (1997), “Scenario Simulation: Theory and Methodology,” Finance and Stochastics.
+
+3) Stefano Iacus, “Simulation and Inference for Stochastic Differential Equations:
+With R Examples”, Springer 2008.
+
+4) Stefano Iacus, “Option Pricing and Estimation of Financial Models with R”, Wiley 2011.
+
+5) John Hull, “Options, Futures, and Other Derivatives”, 10thEdition, Pearson 2017.
+
+6) John Hull, “Risk Management in Financial Institutions”, 5thEdition, Wiley 2018.
+
+7) Damiano Brigo and Fabio Mercurio, “Interest Rate Models -Theory and Practice:
+With Smile, Inflation and Credit”, 2ndEdition, Springer 2016.
+
+8) Tomas Bjork, “Arbitrage Theory in Continuous Time”, Oxford University Press 2009. 
