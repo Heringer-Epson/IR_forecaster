@@ -17,14 +17,14 @@ class Preproc_Data(object):
       $ir: intrabank interest rate
     """    
     
-    def __init__(self, curr, t_ival, application, tenor, incr):
+    def __init__(self, curr='USD', incr=[1,25], tenor=[1,2,3,6,12],
+                 application='simple_diff', t_ival=None):        
         self.curr = curr
-        self.t_ival = t_ival
-        self.application = application
-        self.tenor = tenor
         self.incr = incr
+        self.tenor = tenor
+        self.application = application
+        self.t_ival = t_ival
         self.M = {}
-        self.df = None
 
     def load_data(self, tenor):
         data_dir = './../data/'
@@ -55,39 +55,27 @@ class Preproc_Data(object):
         df = df[cond.values]
         return df
 
-    def transform_data(self, df):
+    def transform_data(self, df, incr):
+        #Transform before computing increments.
         if self.application == 'simple_diff':
-            df['ir_transf'] = df['ir'].diff(1)
+            df['ir_transf'] = df['ir'].diff(incr)
         elif self.application == 'log_ratio':
-            df['ir_transf'] = np.log10(df.ir / df.ir.shift())
+            df['ir_transf'] = np.log(df.ir / df.ir.shift(incr))
         else:
             raise ValueError(
               'Application %s is not supported' %self.application)
-        #Do not include first row, it contains NaN after transformation.
-        df = df.iloc[1:]
+        #Do not include N (incr) first rows, they're NaN after transformation.
+        df = df.iloc[incr:]
         return df
 
-    def average_over_increment(self, df, incr):
-        group_index = np.arange(len(df))//incr
-        aggregator = {'date':['first', 'last'], 'ir':[np.mean, np.std],
-                      'ir_transf':[np.mean, np.std]}
-        #Compute averaged quantities and rename columns to reflect that.
-        df = df.groupby(group_index).agg(aggregator)
-        df.columns = [
-          'last_date', 'first_date', 'ir_mean', 'ir_std', 'ir_transf_mean',
-          'ir_transf_std']
-        df.reindex(columns=sorted(df.columns))
-        return df
-
-    def run_preproc_data(self):
+    def run(self):
         for tenor in self.tenor:
             for incr in self.incr:
                 key = '{}m_{}d'.format(str(tenor), str(incr))
                 df = self.load_data(tenor)
                 df = self.prepare_data(df)
                 df = self.remove_spikes(df, 'ir')
-                df = self.transform_data(df)
+                df = self.transform_data(df, incr)
                 df = self.remove_spikes(df, 'ir_transf')
-                df = self.average_over_increment(df, incr)
                 self.M[key] = df
         return self.M

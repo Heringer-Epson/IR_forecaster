@@ -14,6 +14,7 @@ from plot_pca import Plot_Pca
 from fit_vasicek import Fit_Vasicek
 from compute_simulation import Compute_Simulation
 from datetime import datetime
+from compute_structure import Compute_Structure
 
 class Master(object):
     """
@@ -44,13 +45,20 @@ class Master(object):
     def __init__(self, curr='USD', incr=[1,25], tenor=[1,2,3,6,12],
                  application='simple_diff', t_ival=None):
        
+        #M['curr'] = curr
+        #M['incr'] = incr
+        #M['tenor'] tenor
+        #M['application'] = application
+        #M['t_ival'] = t_ival
         
         #incr = [1, 25] #[1d, 1m, 6m, 1yr]
         #tenor = [1, 2, 3, 6, 12]
         outdir = Init_Run(curr, application).run_init()
         
         M = Preproc_Data(curr, t_ival, application, tenor, incr).run_preproc_data()
-        #print(type(M['1m_1d']['first_date'][0]))
+                
+        #print(M['1m_1d']['first_date'][0])
+        #print(M['1m_1d']['first_date'][-1])
         #print(datetime.strptime(M['1m_1d']['first_date'][0], '%Y-%m-%d').month)
         #Fit_Distr(M, tenor, incr, outdir).run_fitting()
         #Plot_Ir(M, application, tenor, incr, outdir).make_plot()
@@ -75,5 +83,5 @@ class Master(object):
         return self.M
        
 if __name__ == '__main__':
-    Master(application='simple_diff', t_ival=['2010/01/01', '2016/01/01'])
+    Master(application='simple_diff', t_ival=['2010-01-01', '2015-01-01'])
     #Master(t_ival=['2012/01/01', '2018/06/01'], application='log_ratio')

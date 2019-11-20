@@ -9,10 +9,12 @@ from server import app
 from tabs import tab_IR
 from tabs import tab_IR_t
 from tabs import tab_hist
+from tabs import tab_term
 
 from callbacks import callback_tab_IR
 from callbacks import callback_tab_IR_t
 from callbacks import callback_tab_hist
+from callbacks import callback_term
 
 app.layout = html.Div([
     html.H1('Analysis of Intrabank Rates'),
@@ -20,6 +22,7 @@ app.layout = html.Div([
         dcc.Tab(label='IR', value='tab-IR'),
         dcc.Tab(label='Transf. IR', value='tab-IR_t'),
         dcc.Tab(label='IR Hist.', value='tab-hist'),
+        dcc.Tab(label='Term Str.', value='tab-term'),
     ]),
     html.Div(id='tabs-main-content')
 ])
@@ -33,6 +36,8 @@ def render_content(tab):
         return tab_IR_t.tab_IR_t_layout
     elif tab == 'tab-hist':
         return tab_hist.tab_hist_layout
+    elif tab == 'tab-term':
+        return tab_term.tab_term_layout
 
 if __name__ == '__main__':
     app.run_server(debug=True)

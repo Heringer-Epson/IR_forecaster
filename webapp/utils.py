@@ -8,7 +8,6 @@ import pandas as pd
 transf2application = {'Raw':'simple_diff', 'Increment':'simple_diff',
                       'Log ratio':'log_ratio'}
 
-
 def sort_pdfs(D, pdfs):
     aux = {}
     for pdf in pdfs:
@@ -22,3 +21,22 @@ def make_fit_df(D, pdfs):
     D_col = [D['D_' + pdf] for pdf in pdfs]
     #return pd.DataFrame({'p':p_col, 'D':D_col}, index=pdfs)
     return pd.DataFrame({'Distribution':pdfs, 'D':D_col, 'p':p_col})
+
+def format_date(time_range):
+    t_min = '{:04d}-{:02d}-01'.format(int(time_range[0] // 1),
+                                      int(12.*(time_range[0] % 1)) + 1)
+    t_max = '{:04d}-{:02d}-01'.format(int(time_range[1] // 1),
+                                      int(12.*(time_range[1] % 1)) + 1)
+    return t_min, t_max
+
+def merge_dataframes(M, tenor, incr, qtty):
+    list_df = []
+    for t in tenor:
+        key = '{}m_{}d'.format(str(t),str(incr))
+        aux = M[key][['date',qtty]]
+        aux.set_index('date', inplace=True)
+        aux.rename(columns={qtty:qtty + '_{}m'.format(str(t))}, inplace=True)
+        list_df.append(aux)
+    merged_df = pd.concat(list_df, axis=1, join='inner', ignore_index=False)
+    merged_df.index = pd.to_datetime(merged_df.index)
+    return merged_df

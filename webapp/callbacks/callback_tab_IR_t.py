@@ -6,19 +6,12 @@ import dash_html_components as html
 import dash_core_components as dcc
 import plotly.graph_objs as go
 from datetime import datetime
+import utils
 
 from server import app
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
-from master import Master
-
-transf2application = {'Increment':'simple_diff', 'Log ratio':'log_ratio'}
-def format_date(time_range):
-    t_min = '{:04d}-{:02d}-01'.format(int(time_range[0] // 1),
-                                      int(12.*(time_range[0] % 1)) + 1)
-    t_max = '{:04d}-{:02d}-01'.format(int(time_range[1] // 1),
-                                      int(12.*(time_range[1] % 1)) + 1)
-    return t_min, t_max
+from preprocess_data import Preproc_Data
 
 @app.callback(Output('tab-IR_t-graph', 'figure'),
               [Input('tab-IR_t-curr-dropdown', 'value'),
@@ -26,37 +19,30 @@ def format_date(time_range):
                Input('tab-IR_t-transf-radio', 'value'),
                Input('year-slider', 'value')])
 def tab_IR_t_graph(curr, tenor, transf, date_range):
-
-    application = transf2application[transf]
-    M = Master(curr=curr, application=application).retrieve_data()
+    application = utils.transf2application[transf]
+    t_min, t_max = utils.format_date(date_range)
+    M = Preproc_Data(curr=curr, t_ival=[t_min, t_max],
+                     application=application).run()
     df_1 = M['{}m_1d'.format(str(tenor))]
     df_25 = M['{}m_25d'.format(str(tenor))]
-
-    #Trim by date using the Slider info.
-    t_min, t_max = format_date(date_range)
-    dff_1 = df_1[df_1['first_date'] >= t_min]
-    dff_1 = df_1[df_1['first_date'] <= t_max]
-    dff_25 = df_25[df_25['first_date'] >= t_min]
-    dff_25 = df_25[df_25['first_date'] <= t_max]
         
     traces = []
-
     traces.append(go.Scattergl(
-        x=dff_1['first_date'],
-        y=dff_1['ir_transf_mean'],
-        text=dff_1['ir_mean'],
+        x=df_1['date'],
+        y=df_1['ir_transf'],
+        text=df_1['ir'],
         mode='lines',
-        opacity=.5,
-        line=dict(color='#fdae61', width=2.),
+        opacity=1.,
+        line=dict(color='#fdae61', width=3.),
         name='1 day',
     ))
     traces.append(go.Scatter(
-        x=dff_25['first_date'],
-        y=dff_25['ir_transf_mean'],
-        text=dff_25['ir_mean'],
+        x=df_25['date'],
+        y=df_25['ir_transf'],
+        text=df_25['ir'],
         mode='lines',
-        opacity=1.,
-        line=dict(color='#3288bd', width=4.),
+        opacity=.8,
+        line=dict(color='#3288bd', width=3.),
         name='25 days',
     ))
 
@@ -73,8 +59,8 @@ def tab_IR_t_graph(curr, tenor, transf, date_range):
               [Input('tab-IR_t-curr-dropdown', 'value'),
                Input('tab-IR_t-tenor-dropdown', 'value')])
 def tab_IR_t_slider(curr, tenor):
-    M = Master(curr=curr).retrieve_data()
-    times = M['{}m_1d'.format(str(tenor))]['first_date'].values
+    M = Preproc_Data(curr=curr).run()
+    times = M['{}m_1d'.format(str(tenor))]['date'].values
     ti = datetime.strptime(times[-1], '%Y-%m-%d')
     tf = datetime.strptime(times[0], '%Y-%m-%d')
     t_min = 1990
@@ -94,6 +80,6 @@ def tab_IR_t_slider(curr, tenor):
 @app.callback(Output('tab-IR_t-slider-container', 'children'),
               [Input('year-slider', 'value')])
 def tab_IR_t_slider_container(date_range):
-    t_min, t_max = format_date(date_range)
+    t_min, t_max = utils.format_date(date_range)
     return 'Date range is "{}" -- "{}"'.format(t_min, t_max)
 

@@ -12,15 +12,8 @@ from datetime import datetime
 from server import app
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
-from master import Master
+from preprocess_data import Preproc_Data
 from fit_distributions import Fit_Distr
-
-def format_date(time_range):
-    t_min = '{:04d}-{:02d}-01'.format(int(time_range[0] // 1),
-                                      int(12.*(time_range[0] % 1)) + 1)
-    t_max = '{:04d}-{:02d}-01'.format(int(time_range[1] // 1),
-                                      int(12.*(time_range[1] % 1)) + 1)
-    return t_min, t_max
 
 @app.callback([Output('tab-hist-graph', 'figure'),
                Output('tab-hist-table', 'children')],
@@ -32,19 +25,17 @@ def format_date(time_range):
 def tab_hist_graph(curr, tenor, transf, incr, date_range):
 
     application = utils.transf2application[transf]
-    M = Master(curr=curr, incr=[incr], tenor=[tenor],
-               application=application).retrieve_data()
+
+    t_min, t_max = utils.format_date(date_range)
+    M = Preproc_Data(curr=curr, incr=[incr], tenor=[tenor],
+                     t_ival=[t_min, t_max], application=application).run()
     df = M['{}m_{}d'.format(str(tenor), str(incr))]
 
-    #Trim by date using the Slider info.
-    t_min, t_max = format_date(date_range)
-    t_min, t_max = format_date(date_range)
-    dff = df[( (df['first_date'] >= t_min) & (df['first_date'] <= t_max) )]
 
     if transf == 'Raw':
-        y = dff['ir_mean'].values
+        y = df['ir'].values
     else:
-        y = dff['ir_transf_mean'].values
+        y = df['ir_transf'].values
     hist, bins, fit_dict, pdfs = Fit_Distr(y).run_fitting()
     
     traces = []
@@ -91,8 +82,8 @@ def tab_hist_graph(curr, tenor, transf, incr, date_range):
               [Input('tab-hist-curr-dropdown', 'value'),
                Input('tab-hist-tenor-dropdown', 'value')])
 def tab_IR_t_slider(curr, tenor):
-    M = Master(curr=curr).retrieve_data()
-    times = M['{}m_1d'.format(str(tenor))]['first_date'].values
+    M = Preproc_Data(curr=curr).run()
+    times = M['{}m_1d'.format(str(tenor))]['date'].values
     ti = datetime.strptime(times[-1], '%Y-%m-%d')
     tf = datetime.strptime(times[0], '%Y-%m-%d')
     t_min = 1990
@@ -112,6 +103,6 @@ def tab_IR_t_slider(curr, tenor):
 @app.callback(Output('tab-hist-slider-container', 'children'),
               [Input('year-slider', 'value')])
 def tab_IR_t_slider_container(date_range):
-    t_min, t_max = format_date(date_range)
+    t_min, t_max = utils.format_date(date_range)
     return 'Date range is "{}" -- "{}"'.format(t_min, t_max)
 
