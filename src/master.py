@@ -13,6 +13,7 @@ from plot_explained_var import Plot_Expvar
 from plot_pca import Plot_Pca
 from fit_vasicek import Fit_Vasicek
 from compute_simulation import Compute_Simulation
+from datetime import datetime
 
 class Master(object):
     """
@@ -49,6 +50,8 @@ class Master(object):
         outdir = Init_Run(curr, application).run_init()
         
         M = Preproc_Data(curr, t_ival, application, tenor, incr).run_preproc_data()
+        #print(type(M['1m_1d']['first_date'][0]))
+        #print(datetime.strptime(M['1m_1d']['first_date'][0], '%Y-%m-%d').month)
         #Fit_Distr(M, tenor, incr, outdir).run_fitting()
         #Plot_Ir(M, application, tenor, incr, outdir).make_plot()
         #Plot_Structure(M, tenor, incr, outdir).make_plot()

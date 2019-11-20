@@ -45,19 +45,14 @@ class Preproc_Data(object):
         df['ir'] = pd.to_numeric(df['ir'])
         return df
 
-    def remove_spikes(self, df):
-        #Smooth the data and compute a rolling standard deviation day-wise
-        #using 5 days windows.
+    def remove_spikes(self, df, key):
+        window = 9
         ir = df['ir'].values
-        dates = df['date'].values
-        ir_smooth = savgol_filter(ir, 9, 3)
-        hw = pd.Timedelta(4., 'D') #date half window.
-        sd = []
-        for i,d in enumerate(dates):
-            cond = ((df['date'] >= d - hw) & (df['date'] <= d + hw))
-            diff = df['ir'][cond].values - ir_smooth[cond]
-            sd.append(np.sqrt(np.sum(np.power(diff, 2))))
-        df = df[(df['ir'] - ir_smooth).abs() < 5*np.array(sd)]
+        ir_smooth = savgol_filter(ir, window, 3)
+        std = pd.Series(ir).rolling(window).std()
+        std[0:window] = 0. #always keep the elements with incomplete windows.
+        cond = (ir < ir_smooth + 3.*std)
+        df = df[cond.values]
         return df
 
     def transform_data(self, df):
@@ -68,11 +63,11 @@ class Preproc_Data(object):
         else:
             raise ValueError(
               'Application %s is not supported' %self.application)
+        #Do not include first row, it contains NaN after transformation.
+        df = df.iloc[1:]
         return df
 
     def average_over_increment(self, df, incr):
-        #Do not include first row, it contains NaN after transformation.
-        df = df.iloc[1:]
         group_index = np.arange(len(df))//incr
         aggregator = {'date':['first', 'last'], 'ir':[np.mean, np.std],
                       'ir_transf':[np.mean, np.std]}
@@ -90,8 +85,9 @@ class Preproc_Data(object):
                 key = '{}m_{}d'.format(str(tenor), str(incr))
                 df = self.load_data(tenor)
                 df = self.prepare_data(df)
-                #df = self.remove_spikes(df)
+                df = self.remove_spikes(df, 'ir')
                 df = self.transform_data(df)
+                df = self.remove_spikes(df, 'ir_transf')
                 df = self.average_over_increment(df, incr)
                 self.M[key] = df
         return self.M
