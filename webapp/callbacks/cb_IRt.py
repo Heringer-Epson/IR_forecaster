@@ -13,12 +13,12 @@ from server import app
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
 from preprocess_data import Preproc_Data
 
-@app.callback(Output('tab-IR_t-graph', 'figure'),
-              [Input('tab-IR_t-curr-dropdown', 'value'),
-               Input('tab-IR_t-tenor-dropdown', 'value'),
-               Input('tab-IR_t-transf-radio', 'value'),
-               Input('year-slider', 'value')])
-def tab_IR_t_graph(curr, tenor, transf, date_range):
+@app.callback(Output('tab-IRt-graph', 'figure'),
+              [Input('tab-IRt-curr-dropdown', 'value'),
+               Input('tab-IRt-tenor-dropdown', 'value'),
+               Input('tab-IRt-transf-dropdown', 'value'),
+               Input('IRt-year-slider', 'value')])
+def tab_IRt_graph(curr, tenor, transf, date_range):
     application = utils.transf2application[transf]
     t_min, t_max = utils.format_date(date_range)
     M = Preproc_Data(curr=curr, t_ival=[t_min, t_max],
@@ -34,7 +34,7 @@ def tab_IR_t_graph(curr, tenor, transf, date_range):
         mode='lines',
         opacity=1.,
         line=dict(color='#fdae61', width=3.),
-        name='1 day',
+        name='T = 1 day',
     ))
     traces.append(go.Scatter(
         x=df_25['date'],
@@ -43,22 +43,22 @@ def tab_IR_t_graph(curr, tenor, transf, date_range):
         mode='lines',
         opacity=.8,
         line=dict(color='#3288bd', width=3.),
-        name='25 days',
+        name='T = 25 days',
     ))
 
     return {
         'data': traces,
         'layout': dict(
             xaxis={'title': 'Date',},
-            yaxis={'title': 'IR',},
+            yaxis={'title': utils.make_transf_label(transf),},
             hovermode='closest',
         )
     }
 
-@app.callback(Output('tab-IR_t-slider', 'children'),
-              [Input('tab-IR_t-curr-dropdown', 'value'),
-               Input('tab-IR_t-tenor-dropdown', 'value')])
-def tab_IR_t_slider(curr, tenor):
+@app.callback(Output('tab-IRt-slider', 'children'),
+              [Input('tab-IRt-curr-dropdown', 'value'),
+               Input('tab-IRt-tenor-dropdown', 'value')])
+def tab_IRt_slider(curr, tenor):
     M = Preproc_Data(curr=curr).run()
     times = M['{}m_1d'.format(str(tenor))]['date'].values
     ti = datetime.strptime(times[-1], '%Y-%m-%d')
@@ -68,7 +68,7 @@ def tab_IR_t_slider(curr, tenor):
     t_list = [int(t) for t in np.arange(t_min,t_max + 0.0001,1)]
     return html.Div(
         dcc.RangeSlider(
-            id='year-slider',
+            id='IRt-year-slider',
             min=t_min,
             max=t_max,
             value=[2010, 2015],
@@ -77,9 +77,9 @@ def tab_IR_t_slider(curr, tenor):
         )
     )  
 
-@app.callback(Output('tab-IR_t-slider-container', 'children'),
-              [Input('year-slider', 'value')])
-def tab_IR_t_slider_container(date_range):
+@app.callback(Output('tab-IRt-slider-container', 'children'),
+              [Input('IRt-year-slider', 'value')])
+def tab_IRt_slider_container(date_range):
     t_min, t_max = utils.format_date(date_range)
     return 'Date range is "{}" -- "{}"'.format(t_min, t_max)
 

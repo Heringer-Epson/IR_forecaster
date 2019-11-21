@@ -19,7 +19,7 @@ from fit_distributions import Fit_Distr
                Output('tab-hist-table', 'children')],
               [Input('tab-hist-curr-dropdown', 'value'),
                Input('tab-hist-tenor-dropdown', 'value'),
-               Input('tab-hist-transf-radio', 'value'),
+               Input('tab-hist-transf-dropdown', 'value'),
                Input('tab-hist-incr-radio', 'value'),
                Input('year-slider', 'value')])
 def tab_hist_graph(curr, tenor, transf, incr, date_range):
@@ -56,7 +56,7 @@ def tab_hist_graph(curr, tenor, transf, incr, date_range):
         ))
 
     #Make table.
-    fit_df = utils.make_fit_df(fit_dict, pdfs)
+    fit_df = utils.make_fit_df(fit_dict, sorted_pdfs)
 
     hist_table = dash_table.DataTable(
         id='table',
@@ -72,8 +72,8 @@ def tab_hist_graph(curr, tenor, transf, incr, date_range):
     return ({
         'data': traces,
         'layout': dict(
-            xaxis={'title': 'Date',},
-            yaxis={'title': 'IR',},
+            xaxis={'title': utils.make_transf_label(transf, incr),},
+            yaxis={'title': 'Normalized count',},
             hovermode='closest',
         )}, hist_table#html.Div('Date range is "{}" -- "{}"'.format(1, 2))
     )

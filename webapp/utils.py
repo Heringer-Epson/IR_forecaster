@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 #Conversors.
-transf2application = {'Raw':'simple_diff', 'Increment':'simple_diff',
+transf2application = {'Raw':'simple_diff', 'Diff.':'simple_diff',
                       'Log ratio':'log_ratio'}
 
 def sort_pdfs(D, pdfs):
@@ -40,3 +40,15 @@ def merge_dataframes(M, tenor, incr, qtty):
     merged_df = pd.concat(list_df, axis=1, join='inner', ignore_index=False)
     merged_df.index = pd.to_datetime(merged_df.index)
     return merged_df
+
+def make_transf_label(transf, incr=None):
+    if incr is None:
+        T = 'T'
+    else:
+        T = '{} day'.format(str(incr))
+    if transf == 'Diff.':
+        label = r'IR(Date + {}) - IR(Date)'.format(T)
+    elif transf == 'Log ratio':
+        label = r'ln (IR(Date + {}) / IR(Date))'.format(T)
+    
+    return label

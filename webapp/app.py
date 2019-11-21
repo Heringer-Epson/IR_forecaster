@@ -7,12 +7,12 @@ import dash_core_components as dcc
 from server import app
 
 from tabs import tab_IR
-from tabs import tab_IR_t
+from tabs import tab_IRt
 from tabs import tab_hist
 from tabs import tab_term
 
 from callbacks import cb_IR
-from callbacks import cb_IR_transf
+from callbacks import cb_IRt
 from callbacks import cb_hist
 from callbacks import cb_term
 
@@ -33,7 +33,7 @@ def render_content(tab):
     if tab == 'tab-IR':
         return tab_IR.tab_IR_layout
     elif tab == 'tab-IR_t':
-        return tab_IR_t.tab_IR_t_layout
+        return tab_IRt.tab_IRt_layout
     elif tab == 'tab-hist':
         return tab_hist.tab_hist_layout
     elif tab == 'tab-term':

@@ -8,48 +8,46 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 from master import Master
 
 tab_hist_layout = html.Div([
-    html.H3('Histogram of Intrabank Rates'),
 
     html.Div([
-        html.H6('Currency', style={'margin-right': '1em'}),
+        html.H6(
+            'Histogram of Intrabank Rates',
+            style={'marginLeft': '3em', 'font-weight':'bold'}
+        ),
+        html.H6('Currency:', style={'marginLeft': '3.0em', }),
         dcc.Dropdown(
             id='tab-hist-curr-dropdown',
             options=[{'label': i, 'value': i} for i in ['USD', 'CAD']],
             value='USD',
-        ),
-    ], style={'display': 'flex'}),
-        
-    html.Div([
-        html.H6('Tenor', style={'margin-right': '1em'}),
+            style={'width': '100px', 'marginLeft': '.5em'},
+        ),       
+       
+        html.H6('Tenor:', style={'marginLeft': '3em'}),
         dcc.Dropdown(
             id='tab-hist-tenor-dropdown',
-            options=[{'label': i, 'value': i} for i in ['1','2','3','6','12']],
-            value='1'
+            options=[{'label': i + ' month', 'value': i}
+                     for i in ['1', '2', '3', '6', '12']],
+            value='1',
+            style={'width': '150px', 'marginLeft': '.5em'},
         ),
-    ], style={'display': 'flex'}),        
-    
 
-    html.Div([
-        html.H6('Mode', style={'margin-right': '1em'}),
-        dcc.RadioItems(
-            id='tab-hist-transf-radio',
-            options=[{'label': i, 'value': i} for i in [
-              'Raw', 'Increment', 'Log ratio']],
-            value='Increment',
-            style={'display': 'inline-block'},
-        ),
-    ], style={'display': 'inline-block'}),
+        html.H6('Transf.:', style={'marginLeft': '3em'}),
+        dcc.Dropdown(
+            id='tab-hist-transf-dropdown',
+            options=[{'label': i, 'value': i} for i in ['Diff.', 'Log ratio']],
+            value='Diff.',
+            style={'width': '150px', 'marginLeft': '.5em'},
+        ),        
 
-    html.Div([
-        html.H6('Over', style={'margin-right': '1em'}),
+        html.H6('Over:', style={'marginLeft': '3em'}),
         dcc.RadioItems(
             id='tab-hist-incr-radio',
-            options=[{'label': '{} d'.format(str(i)), 'value': i} for i in [1, 25]],
+            options=[{'label': '{} day'.format(str(i)), 'value': i} for i in [1, 25]],
             value=1,
-            labelStyle={'display': 'inline-block'}
+            #labelStyle={'display': 'inline-block'}
         ),
-
-    ], style={'width': '25%', 'display': 'inline-block'}),
+        
+        ], style={'display': 'flex', 'marginTop': '1.5em'}), 
 
     dcc.Graph(id='tab-hist-graph'),
  
