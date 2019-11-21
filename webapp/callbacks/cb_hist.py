@@ -21,7 +21,7 @@ from fit_distributions import Fit_Distr
                Input('tab-hist-tenor-dropdown', 'value'),
                Input('tab-hist-transf-dropdown', 'value'),
                Input('tab-hist-incr-radio', 'value'),
-               Input('year-slider', 'value')])
+               Input('hist-year-slider', 'value')])
 def tab_hist_graph(curr, tenor, transf, incr, date_range):
 
     application = utils.transf2application[transf]
@@ -91,7 +91,7 @@ def tab_IR_t_slider(curr, tenor):
     t_list = [int(t) for t in np.arange(t_min,t_max + 0.0001,1)]
     return html.Div(
         dcc.RangeSlider(
-            id='year-slider',
+            id='hist-year-slider',
             min=t_min,
             max=t_max,
             value=[2010, 2015],
@@ -101,7 +101,7 @@ def tab_IR_t_slider(curr, tenor):
     )  
 
 @app.callback(Output('tab-hist-slider-container', 'children'),
-              [Input('year-slider', 'value')])
+              [Input('hist-year-slider', 'value')])
 def tab_IR_t_slider_container(date_range):
     t_min, t_max = utils.format_date(date_range)
     return 'Date range is "{}" -- "{}"'.format(t_min, t_max)

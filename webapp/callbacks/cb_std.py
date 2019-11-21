@@ -15,17 +15,17 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
 from preprocess_data import Preproc_Data
 from compute_structure import Compute_Structure
 
-@app.callback(Output('tab-term-graph', 'figure'),
-              [Input('tab-term-curr-dropdown', 'value'),
-               Input('tab-term-incr-radio', 'value'),
-               Input('term-year-slider', 'value')])
-def tab_hist_graph(curr, incr, date_range):
+@app.callback(Output('tab-std-graph', 'figure'),
+              [Input('tab-std-curr-dropdown', 'value'),
+               Input('tab-std-transf-dropdown', 'value'),
+               Input('std-year-slider', 'value')])
+def tab_hist_graph(curr, transf, date_range):
     
-
-    #Trim by date using the Slider info.
+    application = utils.transf2application[transf]
     t_min, t_max = utils.format_date(date_range)
 
-    data_obj = Preproc_Data(curr=curr, incr=[incr], t_ival=[t_min, t_max])
+    data_obj = Preproc_Data(curr=curr, t_ival=[t_min, t_max],
+                            application=application)
     M = data_obj.run()
     tenors = data_obj.tenor #Using the default tenors. i.e. [1,2,3,6,12]
 
@@ -73,8 +73,8 @@ def tab_hist_graph(curr, incr, date_range):
         )
     }
 
-@app.callback(Output('tab-term-slider', 'children'),
-              [Input('tab-term-curr-dropdown', 'value')])
+@app.callback(Output('tab-std-slider', 'children'),
+              [Input('tab-std-curr-dropdown', 'value')])
 def tab_term_slider(curr):
     tenor = 1 #All tenors for a given currency have consistent date ranges.
     M = Preproc_Data(curr=curr).run()
@@ -86,7 +86,7 @@ def tab_term_slider(curr):
     t_list = [int(t) for t in np.arange(t_min,t_max + 0.0001,1)]
     return html.Div(
         dcc.RangeSlider(
-            id='term-year-slider',
+            id='std-year-slider',
             min=t_min,
             max=t_max,
             value=[2010, 2015],
@@ -95,8 +95,8 @@ def tab_term_slider(curr):
         )
     )  
 
-@app.callback(Output('tab-term-slider-container', 'children'),
-              [Input('term-year-slider', 'value')])
+@app.callback(Output('tab-std-slider-container', 'children'),
+              [Input('std-year-slider', 'value')])
 def tab_term_slider_container(date_range):
     t_min, t_max = utils.format_date(date_range)
     return 'Date range is "{}" -- "{}"'.format(t_min, t_max)

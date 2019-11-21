@@ -16,7 +16,7 @@ from preprocess_data import Preproc_Data
 @app.callback(Output('tab-IR-graph', 'figure'),
               [Input('tab-IR-curr-dropdown', 'value'),
                Input('tab-IR-tenor-dropdown', 'value'),
-               Input('year-slider', 'value')])
+               Input('IR-year-slider', 'value')])
 def tab_IR_graph(curr, tenor, date_range):
 
     t_min, t_max = utils.format_date(date_range)
@@ -56,7 +56,7 @@ def tab_IR_slider(curr, tenor):
     t_list = [int(t) for t in np.arange(t_min,t_max + 0.0001,1)]
     return html.Div(
         dcc.RangeSlider(
-            id='year-slider',
+            id='IR-year-slider',
             min=t_min,
             max=t_max,
             value=[2010, 2015],
@@ -66,7 +66,7 @@ def tab_IR_slider(curr, tenor):
     )  
 
 @app.callback(Output('tab-IR-slider-container', 'children'),
-              [Input('year-slider', 'value')])
+              [Input('IR-year-slider', 'value')])
 def tab_IR_slider_container(date_range):
     t_min, t_max = utils.format_date(date_range)
     return 'Date range is "{}" -- "{}"'.format(t_min, t_max)
