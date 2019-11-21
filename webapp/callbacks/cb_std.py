@@ -13,7 +13,6 @@ from server import app
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
 from preprocess_data import Preproc_Data
-from compute_structure import Compute_Structure
 
 @app.callback(Output('tab-std-graph', 'figure'),
               [Input('tab-std-curr-dropdown', 'value'),
@@ -28,47 +27,32 @@ def tab_hist_graph(curr, transf, date_range):
                             application=application)
     M = data_obj.run()
     tenors = data_obj.tenor #Using the default tenors. i.e. [1,2,3,6,12]
-
-    merged_df = utils.merge_dataframes(M, tenors, incr, 'ir')
-
-    struct = Compute_Structure(merged_df)
-    struct_monthly = struct.get_montly_avg()
-
-    struct_yr, struct_yr_std, labels_yr = struct.get_yearly_avg()
-
-    #Plot top 3 pdfs.
+    
+    if transf == 'Raw':
+        key = 'ir'
+    else:
+        key = 'ir_transf'
+    
+    std_ratio = [M['{}m_25d'.format(str(t))][key].std()\
+                 /M['{}m_1d'.format(str(t))][key].std()
+                 for t in tenors]
+    
     traces = []
 
-    for yield_avg in struct_monthly:
-        traces.append(go.Scattergl(
-            x=tenors,
-            y=yield_avg,
-            mode='lines',
-            opacity=.3,
-            line=dict(color='grey', width=1.),
-            showlegend=False
-        ))
-
-    for (yield_avg,yield_std,label) in zip(struct_yr,struct_yr_std,labels_yr):
-        traces.append(go.Scattergl(
-            x=tenors,
-            y=yield_avg,
-            error_y=dict(
-                type='data',
-                array=yield_std,
-                visible=True
-            ),
-            mode='lines',
-            opacity=.8,
-            line=dict(width=3.),
-            name=str(label),
-        ))
+    traces.append(go.Scattergl(
+        x=tenors,
+        y=std_ratio,
+        mode='lines',
+        opacity=1.,
+        line=dict(color='black', width=4.),
+        showlegend=False
+    ))
 
     return {
         'data': traces,
         'layout': dict(
             xaxis={'title': 'Maturity [months]',},
-            yaxis={'title': 'Mean yield [%]',},
+            yaxis={'title': r'std(T=25d) / std(T=1d)',},
             hovermode='closest',
         )
     }

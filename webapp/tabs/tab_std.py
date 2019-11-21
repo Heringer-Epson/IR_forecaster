@@ -24,7 +24,7 @@ tab_std_layout = html.Div([
         html.H6('Transf.:', style={'marginLeft': '3em'}),
         dcc.Dropdown(
             id='tab-std-transf-dropdown',
-            options=[{'label': i, 'value': i} for i in ['Diff.', 'Log ratio']],
+            options=[{'label': i, 'value': i} for i in ['Diff.', 'Log ratio', 'Raw']],
             value='Diff.',
             style={'width': '150px', 'marginLeft': '.5em'},
         ),    

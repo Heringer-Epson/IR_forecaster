@@ -50,5 +50,6 @@ def make_transf_label(transf, incr=None):
         label = r'IR(Date + {}) - IR(Date)'.format(T)
     elif transf == 'Log ratio':
         label = r'ln (IR(Date + {}) / IR(Date))'.format(T)
-    
+    elif transf == 'Raw':
+        label = r'IR(Date)'.format(T)    
     return label
