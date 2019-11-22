@@ -7,7 +7,6 @@ import dash_html_components as html
 import dash_core_components as dcc
 import plotly.graph_objs as go
 import dash_table
-from datetime import datetime
 
 from server import app
 
@@ -20,48 +19,38 @@ from compute_corr import Compute_Corr
                Input('tab-corr-transf-dropdown', 'value'),
                Input('tab-corr-incr-radio', 'value'),
                Input('corr-year-slider', 'value')])
-def tab_corr_graph(curr, transf, incr, date_range):   
+def tab_corr_graph(currtag, transf, incrtag, date_range):   
 
     application = utils.transf2application[transf]
     t_min, t_max = utils.format_date(date_range)
 
-    tenors = [1,2,3,6,12]
-
     corr_matrix, columns = Compute_Corr(
-      curr, tenors, incr, transf, [t_min, t_max], application).run()
+      currtag=currtag, incrtag=incrtag, transf=transf, t_range=[t_min, t_max]).run()
 
     traces = []
-    #traces.append(go.Scattergl(
-    #    x=[1,2,3],
-    #    y=[1,2,3],
-    #    mode='lines',
-    #    line=dict(color='grey', width=1.),
-    #))
     
     traces.append(go.Heatmap(
         z=corr_matrix,
         x=columns,
         y=columns,
+        colorscale='balance',
+        zmid=0,
     ))
 
     return {
         'data': traces,
         'layout': dict(
             hovermode='closest',
+            margin = dict(r=200,l=200,t=50,b=100),
+            width = 1000, height = 600,
         )
     }
 
 @app.callback(Output('tab-corr-slider', 'children'),
-              [Input('tab-corr-curr-dropdown', 'value')])
-def tab_IR_t_slider(curr):
-    M = Preproc_Data(curr=curr).run()
-    tenor = 1 #All tenors for a given currency have consistent date ranges.
-    times = M['{}m_1d'.format(str(tenor))]['date'].values
-    ti = datetime.strptime(times[-1], '%Y-%m-%d')
-    tf = datetime.strptime(times[0], '%Y-%m-%d')
-    t_min = 1990
-    t_max = tf.year + (tf.month - 1.) / 12.
-    t_list = [int(t) for t in np.arange(t_min,t_max + 0.0001,1)]
+              [Input('tab-corr-curr-dropdown', 'value'),
+               Input('tab-corr-incr-radio', 'value')])
+def tab_corr_slider(currtag, incrtag):
+    t_min, t_max, t_list = utils.compute_t_range(currtag, incrtag)
     return html.Div(
         dcc.RangeSlider(
             id='corr-year-slider',

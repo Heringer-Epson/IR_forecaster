@@ -21,8 +21,8 @@ tab_term_layout = html.Div([
         html.H6('Over:', style={'marginLeft': '3em'}),
         dcc.RadioItems(
             id='tab-term-incr-radio',
-            options=[{'label': '{} day'.format(str(i)), 'value': i} for i in [1, 25]],
-            value=1,
+            options=[{'label': '{} day'.format(i), 'value': i} for i in ['1', '25']],
+            value='1',
         ),
         
         ], style={'display': 'flex', 'marginTop': '1.5em'}), 

@@ -27,9 +27,9 @@ def tab_hist_graph(curr, tenor, transf, incr, date_range):
     application = utils.transf2application[transf]
 
     t_min, t_max = utils.format_date(date_range)
-    M = Preproc_Data(curr=curr, incr=[incr], tenor=[tenor],
+    M = Preproc_Data(curr=curr, incr=[int(incr)], tenor=[tenor],
                      t_ival=[t_min, t_max], application=application).run()
-    df = M['{}m_{}d'.format(str(tenor), str(incr))]
+    df = M['{}m_{}d'.format(str(tenor), incr)]
 
 
     if transf == 'Raw':
@@ -42,7 +42,7 @@ def tab_hist_graph(curr, tenor, transf, incr, date_range):
     traces.append(go.Bar(
         x=bins,
         y=hist,
-        name='{} day'.format(str(incr)),
+        name='{} day'.format(incr),
     ))
     
     sorted_pdfs = utils.sort_pdfs(fit_dict, pdfs)
@@ -80,15 +80,12 @@ def tab_hist_graph(curr, tenor, transf, incr, date_range):
 
 @app.callback(Output('tab-hist-slider', 'children'),
               [Input('tab-hist-curr-dropdown', 'value'),
+               Input('tab-hist-incr-radio', 'value'),
                Input('tab-hist-tenor-dropdown', 'value')])
-def tab_IR_t_slider(curr, tenor):
-    M = Preproc_Data(curr=curr).run()
-    times = M['{}m_1d'.format(str(tenor))]['date'].values
-    ti = datetime.strptime(times[-1], '%Y-%m-%d')
-    tf = datetime.strptime(times[0], '%Y-%m-%d')
-    t_min = 1990
-    t_max = tf.year + (tf.month - 1.) / 12.
-    t_list = [int(t) for t in np.arange(t_min,t_max + 0.0001,1)]
+def tab_IR_t_slider(curr, incr, tenor):
+    t_min, t_max, t_list = utils.compute_t_range(
+      currtag=curr, incrtag=incr, tenor=[int(tenor)])
+
     return html.Div(
         dcc.RangeSlider(
             id='hist-year-slider',

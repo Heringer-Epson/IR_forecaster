@@ -47,13 +47,8 @@ def tab_IR_graph(curr, tenor, date_range):
               [Input('tab-IR-curr-dropdown', 'value'),
                Input('tab-IR-tenor-dropdown', 'value')])
 def tab_IR_slider(curr, tenor):
-    M = Preproc_Data(curr=curr).run()
-    times = M['{}m_1d'.format(str(tenor))]['date'].values
-    ti = datetime.strptime(times[-1], '%Y-%m-%d')
-    tf = datetime.strptime(times[0], '%Y-%m-%d')
-    t_min = 1990
-    t_max = tf.year + (tf.month - 1.) / 12.
-    t_list = [int(t) for t in np.arange(t_min,t_max + 0.0001,1)]
+    t_min, t_max, t_list = utils.compute_t_range(
+      currtag=curr, tenor=[int(tenor)])
     return html.Div(
         dcc.RangeSlider(
             id='IR-year-slider',

@@ -3,10 +3,17 @@ import os
 import operator
 import numpy as np
 import pandas as pd
+from datetime import datetime as dt
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
+from preprocess_data import Preproc_Data
 
 #Conversors.
 transf2application = {'Raw':'simple_diff', 'Diff.':'simple_diff',
                       'Log ratio':'log_ratio'}
+transf2IR = {'Raw':'ir', 'Diff.':'ir_transf', 'Log ratio':'ir_transf'}
+currtag2curr = {'USD':['USD'], 'CAD':['CAD'], 'USD & CAD':['USD', 'CAD']}
+incrtag2incr = {'1':[1], '25':[25], '1 & 25':[1, 25]}
 
 def sort_pdfs(D, pdfs):
     aux = {}
@@ -19,7 +26,6 @@ def sort_pdfs(D, pdfs):
 def make_fit_df(D, pdfs):
     p_col = [D['p_' + pdf] for pdf in pdfs]
     D_col = [D['D_' + pdf] for pdf in pdfs]
-    #return pd.DataFrame({'p':p_col, 'D':D_col}, index=pdfs)
     return pd.DataFrame({'Distribution':pdfs, 'D':D_col, 'p':p_col})
 
 def format_date(time_range):
@@ -56,3 +62,29 @@ def make_transf_label(transf, incr=None):
     elif transf == 'Raw':
         label = r'IR(Date)'.format(T)    
     return label
+
+def compute_t_range(currtag='USD', incrtag='1', tenor=[1,2,3,6,12]):
+       
+    list_t_min, list_t_max = [], []
+
+    curr_list = currtag2curr[currtag]
+    incr_list = incrtag2incr[incrtag]    
+    for curr in curr_list:
+        M = Preproc_Data(curr=curr, incr=incr_list).run()
+        for incr in incr_list:
+            for t in tenor:
+                key = '{}m_{}d'.format(str(t),str(incr))
+                dates = M[key]['date'].values
+                list_t_min.append(min(dates))
+                list_t_max.append(max(dates))
+    
+    t_min = dt.strptime(max(list_t_min), '%Y-%m-%d')
+    t_max = dt.strptime(min(list_t_max), '%Y-%m-%d')
+    #Don't use data prior to 1990.
+    t_min = max([t_min, dt.strptime('1990-01-01', '%Y-%m-%d')])
+    
+    t_min = t_min.year + (t_min.month - 1.) / 12.
+    t_max = t_max.year + (t_max.month - 1.) / 12.
+
+    t_list = [int(t) for t in np.arange(t_min,t_max + 0.0001,1)]
+    return t_min, t_max, t_list

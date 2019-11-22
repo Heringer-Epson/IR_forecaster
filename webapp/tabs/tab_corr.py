@@ -37,7 +37,7 @@ tab_corr_layout = html.Div([
         
         ], style={'display': 'flex', 'marginTop': '1.5em'}), 
         
-    dcc.Graph(id='tab-corr-graph'),
+    html.Div([dcc.Graph(id='tab-corr-graph'),], className='container'),
  
     html.Div([
         html.Div(

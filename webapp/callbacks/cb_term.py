@@ -25,7 +25,7 @@ def tab_term_graph(curr, incr, date_range):
     #Trim by date using the Slider info.
     t_min, t_max = utils.format_date(date_range)
 
-    data_obj = Preproc_Data(curr=curr, incr=[incr], t_ival=[t_min, t_max])
+    data_obj = Preproc_Data(curr=curr, incr=[int(incr)], t_ival=[t_min, t_max])
     M = data_obj.run()
     tenors = data_obj.tenor #Using the default tenors. i.e. [1,2,3,6,12]
 
@@ -74,16 +74,10 @@ def tab_term_graph(curr, incr, date_range):
     }
 
 @app.callback(Output('tab-term-slider', 'children'),
-              [Input('tab-term-curr-dropdown', 'value')])
-def tab_term_slider(curr):
-    tenor = 1 #All tenors for a given currency have consistent date ranges.
-    M = Preproc_Data(curr=curr).run()
-    times = M['{}m_1d'.format(str(tenor))]['date'].values
-    ti = datetime.strptime(times[-1], '%Y-%m-%d')
-    tf = datetime.strptime(times[0], '%Y-%m-%d')
-    t_min = 1990
-    t_max = tf.year + (tf.month - 1.) / 12.
-    t_list = [int(t) for t in np.arange(t_min,t_max + 0.0001,1)]
+              [Input('tab-term-curr-dropdown', 'value'),
+               Input('tab-term-incr-radio', 'value')])
+def tab_term_slider(curr, incr):
+    t_min, t_max, t_list = utils.compute_t_range(currtag=curr, incrtag=incr)
     return html.Div(
         dcc.RangeSlider(
             id='term-year-slider',

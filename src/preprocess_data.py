@@ -33,8 +33,6 @@ class Preproc_Data(object):
         return pd.read_csv(fpath, header=0, names=['date', 'ir'])[::-1] 
         
     def prepare_data(self, df):
-        #Convert date column type to a datetime object.
-        #df['date'] = [pd.to_datetime(df['date'])]
         #Trim the data to include only the time interval requested.
         if self.t_ival is not None:
             cond = ((df['date'] >= self.t_ival[0]) & (df['date'] <= self.t_ival[1]))
@@ -78,4 +76,6 @@ class Preproc_Data(object):
                 df = self.transform_data(df, incr)
                 df = self.remove_spikes(df, 'ir_transf')
                 self.M[key] = df
+        self.M['incr'] = self.incr
+        self.M['tenor'] = self.tenor
         return self.M
