@@ -29,14 +29,17 @@ def format_date(time_range):
                                       int(12.*(time_range[1] % 1)) + 1)
     return t_min, t_max
 
-def merge_dataframes(M, tenor, incr, qtty):
+def merge_dataframes(list_M, list_curr, list_tenor, list_incr, qtty):
     list_df = []
-    for t in tenor:
-        key = '{}m_{}d'.format(str(t),str(incr))
-        aux = M[key][['date',qtty]]
-        aux.set_index('date', inplace=True)
-        aux.rename(columns={qtty:qtty + '_{}m'.format(str(t))}, inplace=True)
-        list_df.append(aux)
+    for M, curr in zip(list_M,list_curr):
+        for incr in list_incr:
+            for t in list_tenor:
+                key = '{}m_{}d'.format(str(t),str(incr))
+                aux = M[key][['date',qtty]]
+                aux.set_index('date', inplace=True)
+                aux.rename(columns={
+                  qtty:qtty + '_{}_{}m'.format(curr, str(t))}, inplace=True)
+                list_df.append(aux)
     merged_df = pd.concat(list_df, axis=1, join='inner', ignore_index=False)
     merged_df.index = pd.to_datetime(merged_df.index)
     return merged_df

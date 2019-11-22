@@ -4,9 +4,6 @@ from dash.dependencies import Input, Output
 import dash_html_components as html
 import dash_core_components as dcc
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
-from master import Master
-
 tab_hist_layout = html.Div([
 
     html.Div([

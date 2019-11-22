@@ -11,12 +11,14 @@ from tabs import tab_IRt
 from tabs import tab_hist
 from tabs import tab_term
 from tabs import tab_std
+from tabs import tab_corr
 
 from callbacks import cb_IR
 from callbacks import cb_IRt
 from callbacks import cb_hist
 from callbacks import cb_term
 from callbacks import cb_std
+from callbacks import cb_corr
 
 app.layout = html.Div([
     html.H1('Analysis of Intrabank Rates'),
@@ -26,6 +28,7 @@ app.layout = html.Div([
         dcc.Tab(label='IR Hist.', value='tab-hist'),
         dcc.Tab(label='Term Str.', value='tab-term'),
         dcc.Tab(label='Standard Dev.', value='tab-std'),
+        dcc.Tab(label='Corr. matrix', value='tab-corr'),
     ]),
     html.Div(id='tabs-main-content')
 ])
@@ -43,6 +46,8 @@ def render_content(tab):
         return tab_term.tab_term_layout
     elif tab == 'tab-std':
         return tab_std.tab_std_layout
-        
+    elif tab == 'tab-corr':
+        return tab_corr.tab_corr_layout
+                
 if __name__ == '__main__':
     app.run_server(debug=True)

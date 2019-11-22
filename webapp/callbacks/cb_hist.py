@@ -11,7 +11,7 @@ from datetime import datetime
 
 from server import app
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 from preprocess_data import Preproc_Data
 from fit_distributions import Fit_Distr
 

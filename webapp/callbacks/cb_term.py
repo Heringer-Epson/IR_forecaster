@@ -11,7 +11,7 @@ from datetime import datetime
 
 from server import app
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 from preprocess_data import Preproc_Data
 from compute_structure import Compute_Structure
 
@@ -19,7 +19,7 @@ from compute_structure import Compute_Structure
               [Input('tab-term-curr-dropdown', 'value'),
                Input('tab-term-incr-radio', 'value'),
                Input('term-year-slider', 'value')])
-def tab_hist_graph(curr, incr, date_range):
+def tab_term_graph(curr, incr, date_range):
     
 
     #Trim by date using the Slider info.
@@ -29,7 +29,7 @@ def tab_hist_graph(curr, incr, date_range):
     M = data_obj.run()
     tenors = data_obj.tenor #Using the default tenors. i.e. [1,2,3,6,12]
 
-    merged_df = utils.merge_dataframes(M, tenors, incr, 'ir')
+    merged_df = utils.merge_dataframes([M], [curr], tenors, [incr], 'ir')
 
     struct = Compute_Structure(merged_df)
     struct_monthly = struct.get_montly_avg()

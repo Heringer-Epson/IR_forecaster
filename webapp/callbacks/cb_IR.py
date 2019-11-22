@@ -10,7 +10,7 @@ import utils
 
 from server import app
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 from preprocess_data import Preproc_Data
 
 @app.callback(Output('tab-IR-graph', 'figure'),
