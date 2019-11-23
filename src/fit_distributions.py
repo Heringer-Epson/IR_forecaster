@@ -41,6 +41,7 @@ class Fit_Distr(object):
             
             #Fit distribution and get most likely parameters.
             pars = eval('scipy.stats.' + pdf + '.fit(self.y)')
+            #print(pdf, pars)
             
             if not any([math.isnan(p) for p in pars]):
                 arg = ', '.join([str(val) for val in pars])
