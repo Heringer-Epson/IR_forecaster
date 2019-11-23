@@ -33,7 +33,7 @@ def tab_corr_graph(currtag, transf, incrtag, date_range):
         z=corr_matrix,
         x=columns,
         y=columns,
-        colorscale='balance',
+        colorscale='balance', #'curl', 'delta'
         zmid=0,
     ))
 
