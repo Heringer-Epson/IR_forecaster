@@ -109,12 +109,4 @@ tab_about_layout = html.Div([
 
     ])
 
-])
-
-#dcc.Markdown(
-#    """
-#    # This is an <h1> tag
-#    """,
-#    style={'marginLeft': '6em', 'text-align':'left'},
-#),        
-        
+])   

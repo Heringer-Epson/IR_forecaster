@@ -62,7 +62,7 @@ def make_transf_label(transf, incr=None):
     elif transf == 'Raw':
         label = r'IR(Date)'.format(T)    
     return label
-
+    
 def compute_t_range(currtag='USD', incrtag='1', tenor=[1,2,3,6,12]):
        
     list_t_min, list_t_max = [], []

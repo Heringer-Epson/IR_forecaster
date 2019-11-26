@@ -15,6 +15,7 @@ from tabs import tab_std
 from tabs import tab_corr
 from tabs import tab_pca
 from tabs import tab_sim
+from tabs import tab_pred
 
 from callbacks import cb_IR
 from callbacks import cb_IRt
@@ -24,6 +25,7 @@ from callbacks import cb_std
 from callbacks import cb_corr
 from callbacks import cb_pca
 from callbacks import cb_sim
+from callbacks import cb_pred
 
 app.layout = html.Div([
     html.H1('Analysis of Intrabank Rates'),
@@ -37,6 +39,7 @@ app.layout = html.Div([
         dcc.Tab(label='Corr. matrix', value='tab-corr'),
         dcc.Tab(label='PCA', value='tab-pca'),
         dcc.Tab(label='Simulate IR', value='tab-sim'),
+        dcc.Tab(label='Term Prediction', value='tab-pred'),
     ]),
     html.Div(id='tabs-main-content')
 ])
@@ -62,6 +65,8 @@ def render_content(tab):
         return tab_pca.tab_pca_layout
     elif tab == 'tab-sim':
         return tab_sim.tab_sim_layout
+    elif tab == 'tab-pred':
+        return tab_pred.tab_pred_layout
                                 
 if __name__ == '__main__':
     app.run_server(debug=True)
