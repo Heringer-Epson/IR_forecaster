@@ -2,7 +2,7 @@ import sys
 import os
 import utils
 import numpy as np
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 import dash_html_components as html
 import dash_core_components as dcc
 import plotly.graph_objs as go
@@ -24,8 +24,10 @@ from forward_rates import Forward_Rates
                Input('tab-sim-model-dropdown', 'value'),
                Input('tab-sim-distr-dropdown', 'value'),
                Input('tab-sim-ndays-dropdown', 'value'),
-               Input('tab-sim-npaths-dropdown', 'value'),])
-def tab_sim_graph(curr, tenor, transf, incr, date_range, model, distr, ndays, npaths):
+               Input('tab-sim-npaths-dropdown', 'value'),
+               Input('tab-sim-button', 'n_clicks')],)
+def tab_sim_graph(curr, tenor, transf, incr, date_range, model, distr, ndays,
+                  npaths, n_clicks):
 
     application = utils.transf2application[transf]
     IR_key = utils.transf2IR[transf]
@@ -36,11 +38,12 @@ def tab_sim_graph(curr, tenor, transf, incr, date_range, model, distr, ndays, np
     df = M['{}m_{}d'.format(str(tenor), incr)]
     t_current = df['date'].values[::-1][-1] #Such that -1 index is current.
     X = df[IR_key].values[::-1] 
-    X_0 = np.trim_zeros(X)[-1] #Current IR is stored in the 0 element.
+    #X = np.random.normal(0, 0.01, 1000)
+    X_0 = X[-1] #Current IR is stored in the 0 element.
     
     #In the class below, add the distr option. For now, it assumes gaussian.
     fit = Fit_Simpars(X, model).run()
-    #print(fit)
+    print(fit)
 
     traces = []
     time_array = np.arange(0,ndays + 1.e-5,1)

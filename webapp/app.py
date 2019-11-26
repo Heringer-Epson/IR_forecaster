@@ -6,6 +6,7 @@ import dash_html_components as html
 import dash_core_components as dcc
 from server import app
 
+from tabs import tab_about
 from tabs import tab_IR
 from tabs import tab_IRt
 from tabs import tab_hist
@@ -26,7 +27,8 @@ from callbacks import cb_sim
 
 app.layout = html.Div([
     html.H1('Analysis of Intrabank Rates'),
-    dcc.Tabs(id='tabs-main', value='tab-IR', children=[
+    dcc.Tabs(id='tabs-main', value='tab-about', children=[
+        dcc.Tab(label='About', value='tab-about'),
         dcc.Tab(label='IR', value='tab-IR'),
         dcc.Tab(label='Transf. IR', value='tab-IR_t'),
         dcc.Tab(label='IR Hist.', value='tab-hist'),
@@ -42,7 +44,9 @@ app.layout = html.Div([
 @app.callback(Output('tabs-main-content', 'children'),
               [Input('tabs-main', 'value')])
 def render_content(tab):
-    if tab == 'tab-IR':
+    if tab == 'tab-about':
+        return tab_about.tab_about_layout
+    elif tab == 'tab-IR':
         return tab_IR.tab_IR_layout
     elif tab == 'tab-IR_t':
         return tab_IRt.tab_IRt_layout

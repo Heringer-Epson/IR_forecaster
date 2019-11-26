@@ -58,9 +58,10 @@ def tab_term_graph(curr, incr, date_range):
                 array=yield_std,
                 visible=True
             ),
-            mode='lines',
+            mode='lines+markers',
             opacity=.8,
             line=dict(width=3.),
+            marker=dict(size=10),
             name=str(label),
         ))
 

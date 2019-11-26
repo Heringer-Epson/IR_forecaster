@@ -32,7 +32,8 @@ tab_sim_layout = html.Div([
         dcc.Dropdown(
             id='tab-sim-transf-dropdown',
             options=[{'label': i, 'value': i} for i in ['Diff.', 'Log ratio', 'Raw']],
-            value='Raw',
+            #value='Raw',
+            value='Diff.',
             style={'width': '150px', 'marginLeft': '.5em'},
         ),        
 
@@ -76,7 +77,13 @@ tab_sim_layout = html.Div([
             options=[{'label': str(i), 'value': i} for i in [5, 10, 50, 100, 500]],
             value=5,
             style={'width': '80px', 'marginLeft': '.5em'},
-        ),        
+        ),   
+        
+        html.Button(
+                id='tab-sim-button',
+                n_clicks=0,
+                children='Re-calculate',
+                style={'width': '150px', 'marginLeft': '5em'}),     
 
         #Add button to recalculate paths.
         ], style={'display': 'flex', 'marginTop': '1.5em'}), 

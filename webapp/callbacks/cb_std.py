@@ -42,9 +42,10 @@ def tab_hist_graph(curr, transf, date_range):
     traces.append(go.Scattergl(
         x=tenors,
         y=std_ratio,
-        mode='lines',
+        mode='lines+markers',
         opacity=1.,
         line=dict(color='black', width=4.),
+        marker=dict(color='black', size=10),
         showlegend=False
     ))
 
