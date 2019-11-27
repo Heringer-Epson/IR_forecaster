@@ -1,16 +1,13 @@
 import sys
 import os
-import utils
 import numpy as np
 from dash.dependencies import Input, Output
 import dash_html_components as html
 import dash_core_components as dcc
 import plotly.graph_objs as go
-import dash_table
-from datetime import datetime
-
 from server import app
 
+import utils
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 from preprocess_data import Preproc_Data
 from compute_structure import Compute_Structure
@@ -21,19 +18,14 @@ from compute_structure import Compute_Structure
                Input('term-year-slider', 'value')])
 def tab_term_graph(curr, incr, date_range):
     
-
-    #Trim by date using the Slider info.
     t_min, t_max = utils.format_date(date_range)
 
-    data_obj = Preproc_Data(curr=curr, incr=[int(incr)], t_ival=[t_min, t_max])
-    M = data_obj.run()
-    tenors = data_obj.tenor #Using the default tenors. i.e. [1,2,3,6,12]
-
+    M = Preproc_Data(curr=curr, incr=[int(incr)], t_ival=[t_min, t_max]).run()
+    tenors = M['tenor'] #Using the default tenors. i.e. [1,2,3,6,12]
     merged_df = utils.merge_dataframes([M], [curr], tenors, [incr], 'ir')
 
     struct = Compute_Structure(merged_df)
     struct_monthly = struct.get_montly_avg()
-
     struct_yr, struct_yr_std, labels_yr = struct.get_yearly_avg()
 
     #Plot top 3 pdfs.

@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 
-import sys
-import os
 import numpy as np
-import pandas as pd
 
 class Forward_Rates(object):
     """

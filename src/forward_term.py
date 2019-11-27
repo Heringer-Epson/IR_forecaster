@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 
-import sys
-import os
 import numpy as np
-import pandas as pd
 from scipy.linalg import cholesky
 
 from fit_simpars import Fit_Simpars
@@ -49,15 +46,11 @@ class Forward_Term(object):
     def generate_random(self):
         dt = 1./253.
         scale = np.sqrt(dt)
-                
-        #uncorr_random = np.random.normal(0., scale, (self.ndays,self.Nt))
-        #corr_random = np.dot(uncorr_random, self.dec)
-        
+                        
         #For each path, calculate a matrix of correlated random numbers, where
         #nrows = ndays and ncols=ntenors. If there is only only tenor, the
         #Correlation does not matter.
         #self.random_number[npaths][ndays][ntenor]
-        
         self.random_number = [
           np.dot(np.random.normal(0., scale, (self.ndays,self.Nt)), self.dec) 
           for j in range(self.npaths)]
@@ -78,7 +71,6 @@ class Forward_Term(object):
         
         #self.paths[tenor][npaths][ndays]
         #self.paths[tenor][ndays][npaths] #After transposing.
-
         for j in range(self.Nt):
             aux_mat = np.transpose(self.paths[str(j)])
             self.mean.append([np.mean(aux_mat[i]) for i in range(self.ndays)])

@@ -1,4 +1,3 @@
-from dash.dependencies import Input, Output
 import dash_html_components as html
 import dash_core_components as dcc
 import base64
@@ -103,10 +102,7 @@ tab_about_layout = html.Div([
                     profits or losses occuring from the usage of this app. 
                     """
                 )
-
             ], style={'marginTop': '-10em'}, className="six columns"),
         ], className="row")
-
     ])
-
 ])   

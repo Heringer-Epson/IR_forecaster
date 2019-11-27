@@ -1,16 +1,13 @@
-import sys
-import os
-from dash.dependencies import Input, Output
 import dash_html_components as html
 import dash_core_components as dcc
 
 tab_sim_layout = html.Div([
-
     html.Div([
         html.H6(
             'Simulate Future Rates',
             style={'marginLeft': '3em', 'font-weight':'bold'}
         ),
+        
         html.H6('Currency:', style={'marginLeft': '3.0em', }),
         dcc.Dropdown(
             id='tab-sim-curr-dropdown',
@@ -42,7 +39,6 @@ tab_sim_layout = html.Div([
             options=[{'label': '{} day'.format(str(i)), 'value': i} for i in ['1', '25']],
             value='1',
         ),
-        
         ], style={'display': 'flex', 'marginTop': '1.5em'}), 
 
     html.Div([

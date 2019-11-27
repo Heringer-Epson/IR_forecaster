@@ -1,16 +1,13 @@
-import sys
-import os
-from dash.dependencies import Input, Output
 import dash_html_components as html
 import dash_core_components as dcc
 
 tab_hist_layout = html.Div([
-
     html.Div([
         html.H6(
             'Histogram of Intrabank Rates',
             style={'marginLeft': '3em', 'font-weight':'bold'}
         ),
+     
         html.H6('Currency:', style={'marginLeft': '3.0em', }),
         dcc.Dropdown(
             id='tab-hist-curr-dropdown',
@@ -43,7 +40,6 @@ tab_hist_layout = html.Div([
             value='1',
             #labelStyle={'display': 'inline-block'}
         ),
-        
         ], style={'display': 'flex', 'marginTop': '1.5em'}), 
 
     dcc.Graph(id='tab-hist-graph'),
@@ -65,5 +61,4 @@ tab_hist_layout = html.Div([
                'marginRight': 200
         },
     ),
-
 ])

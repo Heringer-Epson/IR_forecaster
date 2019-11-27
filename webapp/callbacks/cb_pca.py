@@ -1,15 +1,12 @@
 import sys
 import os
-import utils
-import numpy as np
 from dash.dependencies import Input, Output
 import dash_html_components as html
 import dash_core_components as dcc
 import plotly.graph_objs as go
-import dash_table
-
 from server import app
 
+import utils
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 from preprocess_data import Preproc_Data
 from explained_var import Explained_Var
@@ -45,8 +42,6 @@ def tab_pca_graph(curr, transf, incr, date_range):
         'data': traces,
         'layout': dict(
             hovermode='closest',
-            #margin = dict(r=200,l=200,t=50,b=100),
-            #width = 1000, height = 600,
         )
     }
 

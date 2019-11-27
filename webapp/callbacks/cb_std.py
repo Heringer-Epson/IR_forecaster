@@ -1,16 +1,13 @@
 import sys
 import os
-import utils
 import numpy as np
 from dash.dependencies import Input, Output
 import dash_html_components as html
 import dash_core_components as dcc
 import plotly.graph_objs as go
-import dash_table
-from datetime import datetime
-
 from server import app
 
+import utils
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 from preprocess_data import Preproc_Data
 
@@ -21,24 +18,18 @@ from preprocess_data import Preproc_Data
 def tab_hist_graph(curr, transf, date_range):
     
     application = utils.transf2application[transf]
+    IR_key = utils.transf2IR[transf]
     t_min, t_max = utils.format_date(date_range)
 
-    data_obj = Preproc_Data(curr=curr, t_ival=[t_min, t_max],
-                            application=application)
-    M = data_obj.run()
-    tenors = data_obj.tenor #Using the default tenors. i.e. [1,2,3,6,12]
+    M = Preproc_Data(
+      curr=curr, t_ival=[t_min, t_max], application=application).run()
+    tenors = M['tenor'] #Using the default tenors. i.e. [1,2,3,6,12]
     
-    if transf == 'Raw':
-        key = 'ir'
-    else:
-        key = 'ir_transf'
-    
-    std_ratio = [M['{}m_25d'.format(str(t))][key].std()\
-                 /M['{}m_1d'.format(str(t))][key].std()
+    std_ratio = [M['{}m_25d'.format(str(t))][IR_key].std()\
+                 /M['{}m_1d'.format(str(t))][IR_key].std()
                  for t in tenors]
     
     traces = []
-
     traces.append(go.Scattergl(
         x=tenors,
         y=std_ratio,
@@ -78,4 +69,3 @@ def tab_term_slider(curr):
 def tab_term_slider_container(date_range):
     t_min, t_max = utils.format_date(date_range)
     return 'Date range is "{}" -- "{}"'.format(t_min, t_max)
-

@@ -84,7 +84,6 @@ class Compute_Simulation(object):
             r_sim = copy.deepcopy(self.r)
             
             for j in range(len(self.t_steps)): 
-            #for j in range(10): 
             
                 dW = self.compute_dW()
                 dr = self.a*(self.b - r_sim[j])*self.dt + self.sigma*dW
@@ -102,7 +101,6 @@ class Compute_Simulation(object):
         else:
             raise ValueError(
               'Application %s is not supported' %self.application)                
-        print(self.out['1'])
 
     def make_plot(self):
         for incr in self.incr:

@@ -1,16 +1,13 @@
 import sys
 import os
-import utils
-import numpy as np
 from dash.dependencies import Input, Output
 import dash_html_components as html
 import dash_core_components as dcc
 import plotly.graph_objs as go
 import dash_table
-from datetime import datetime
-
 from server import app
 
+import utils
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 from preprocess_data import Preproc_Data
 from fit_distributions import Fit_Distr
@@ -23,19 +20,14 @@ from fit_distributions import Fit_Distr
                Input('tab-hist-incr-radio', 'value'),
                Input('hist-year-slider', 'value')])
 def tab_hist_graph(curr, tenor, transf, incr, date_range):
-
     application = utils.transf2application[transf]
+    IR_key = utils.transf2IR[transf]
 
     t_min, t_max = utils.format_date(date_range)
     M = Preproc_Data(curr=curr, incr=[int(incr)], tenor=[tenor],
                      t_ival=[t_min, t_max], application=application).run()
     df = M['{}m_{}d'.format(str(tenor), incr)]
-
-
-    if transf == 'Raw':
-        y = df['ir'].values
-    else:
-        y = df['ir_transf'].values
+    y = df[IR_key].values
     hist, bins, fit_dict, pdfs = Fit_Distr(y).run_fitting()
     
     traces = []
@@ -44,7 +36,6 @@ def tab_hist_graph(curr, tenor, transf, incr, date_range):
         y=hist,
         name='{} day'.format(incr),
     ))
-    
     sorted_pdfs = utils.sort_pdfs(fit_dict, pdfs)
 
     #Plot top 3 pdfs.
@@ -57,7 +48,6 @@ def tab_hist_graph(curr, tenor, transf, incr, date_range):
 
     #Make table.
     fit_df = utils.make_fit_df(fit_dict, sorted_pdfs)
-
     hist_table = dash_table.DataTable(
         id='table',
         columns=[{'name': i, 'id': i} for i in fit_df.columns],
@@ -102,4 +92,3 @@ def tab_IR_t_slider(curr, incr, tenor):
 def tab_IR_t_slider_container(date_range):
     t_min, t_max = utils.format_date(date_range)
     return 'Date range is "{}" -- "{}"'.format(t_min, t_max)
-

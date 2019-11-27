@@ -1,15 +1,14 @@
 import sys
 import os
 import json
-import utils
 import numpy as np
 from dash.dependencies import Input, Output, State
 import dash_html_components as html
 import dash_core_components as dcc
 import plotly.graph_objs as go
-
 from server import app
 
+import utils
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 from preprocess_data import Preproc_Data
 from forward_term import Forward_Term
@@ -83,7 +82,6 @@ def tab_IR_t_slider(curr, incr):
             max=N_days_max,
             value=1,
             marks={time: str(time) for time in np.arange(5,N_days_max + 1,25).tolist()},
-            #marks={time: str(time) for time in [1,2,3,4,5]},
             step=1,
         )
     )  

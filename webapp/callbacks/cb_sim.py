@@ -1,19 +1,15 @@
 import sys
 import os
-import utils
 import numpy as np
 from dash.dependencies import Input, Output, State
 import dash_html_components as html
 import dash_core_components as dcc
 import plotly.graph_objs as go
-import dash_table
-
 from server import app
 
+import utils
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 from preprocess_data import Preproc_Data
-from fit_simpars import Fit_Simpars
-from forward_rates import Forward_Rates
 from forward_term import Forward_Term
 
 @app.callback(Output('tab-sim-graph', 'figure'),
@@ -41,36 +37,6 @@ def tab_sim_graph(curr, tenor, transf, incr, date_range, model, distr, ndays,
     matrix = np.transpose(merged_df.values)
     paths, mean, std = Forward_Term(matrix, model, distr, ndays, npaths).run()
 
-    print(ndays, npaths)
-    #print(paths[str(int(tenor) - 1)])
-    '''
-    df = M['{}m_{}d'.format(str(tenor), incr)]
-    t_current = df['date'].values[::-1][-1] #Such that -1 index is current.
-    X = df[IR_key].values[::-1] 
-    #X = np.random.normal(0, 0.01, 1000)
-    X_0 = X[-1] #Current IR is stored in the 0 element.
-    
-    #In the class below, add the distr option. For now, it assumes gaussian.
-    fit = Fit_Simpars(X, model).run()
-    print(fit)
-
-    traces = []
-    time_array = np.arange(0,ndays + 1.e-5,1)
-    
-    for i in range(npaths):
-        random_array = np.random.normal(0., np.sqrt(1./253.), ndays)
-        path = Forward_Rates(X_0, fit, model, random_array).run()
-        traces.append(go.Scattergl(
-            x=time_array,
-            y=path,
-            mode='lines',
-            opacity=.7,
-            line=dict(width=1.),
-            showlegend=False
-        ))
-    
-
-    '''
     traces = []
     time_array = np.arange(0,ndays + 1.e-5,1)
     for path in paths[str(int(tenor) - 1)]:

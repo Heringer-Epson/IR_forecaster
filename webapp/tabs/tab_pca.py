@@ -3,12 +3,12 @@ import dash_html_components as html
 import dash_core_components as dcc
 
 tab_pca_layout = html.Div([
-
     html.Div([
         html.H6(
             'PCA decomposition',
             style={'marginLeft': '3em', 'font-weight':'bold'}
         ),
+      
         html.H6('Currency:', style={'marginLeft': '3.0em', }),
         dcc.Dropdown(
             id='tab-pca-curr-dropdown',

@@ -1,6 +1,3 @@
-import sys
-import os
-from dash.dependencies import Input, Output
 import dash_html_components as html
 import dash_core_components as dcc
 
@@ -10,6 +7,7 @@ tab_std_layout = html.Div([
             'Averaged Term Structure',
             style={'marginLeft': '3em', 'font-weight':'bold'}
         ),
+       
         html.H6('Currency:', style={'marginLeft': '3.0em', }),
         dcc.Dropdown(
             id='tab-std-curr-dropdown',
