@@ -13,6 +13,8 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 from preprocess_data import Preproc_Data
 from forward_term import Forward_Term
 
+N_days_max = 250
+
 @app.callback(Output('tab-pred-graph', 'figure'),
               [Input('tab-pred-curr-dropdown', 'value'),
                Input('tab-pred-transf-dropdown', 'value'),
@@ -20,7 +22,7 @@ from forward_term import Forward_Term
                Input('pred-year-slider', 'value'),
                Input('tab-pred-model-dropdown', 'value'),
                Input('tab-pred-distr-dropdown', 'value'),
-               Input('tab-pred-ndays-dropdown', 'value')],)
+               Input('pred-ndays-slider', 'value')],)
 def tab_pred_graph(curr, transf, incr, date_range, model, distr, ndays):
 
     application = utils.transf2application[transf]
@@ -36,23 +38,21 @@ def tab_pred_graph(curr, transf, incr, date_range, model, distr, ndays):
     merged_df = utils.merge_dataframes([M], [curr], tenors, [incr], IR_key)
     matrix = np.transpose(merged_df.values)
 
-    Forward_Term(matrix, model, distr, ndays).run()
+    paths, mean, std = Forward_Term(matrix, model, distr, N_days_max).run()
     #df = M['{}m_{}d'.format(str(tenor), incr)]
     #t_current = df['date'].values[::-1][-1] #Such that -1 index is current.
-    #X = df[IR_key].values[::-1] 
-    #X = np.random.normal(0, 0.01, 1000)
-    #X_0 = X[-1] #Current IR is stored in the 0 element.
-    
-    #In the class below, add the distr option. For now, it assumes gaussian.
-    #fit = Fit_Simpars(X, model).run()
-    #print(fit)
+
 
     traces = []
-    #time_array = np.arange(0,ndays + 1.e-5,1)
     
     traces.append(go.Scattergl(
-        x=[1,2,3],
-        y=[1,4,9],
+        x=tenors,
+        y=mean[ndays - 1],
+            error_y=dict(
+                type='data',
+                array=std[ndays - 1],
+                visible=True
+            ),
         mode='lines',
         opacity=.7,
         line=dict(color='grey', width=1.),
@@ -67,6 +67,24 @@ def tab_pred_graph(curr, transf, incr, date_range, model, distr, ndays):
             hovermode='closest',
         )}
     
+@app.callback(Output('tab-pred-ndays-slider', 'children'),
+              [Input('tab-pred-curr-dropdown', 'value'),
+               Input('tab-pred-incr-radio', 'value')])
+def tab_IR_t_slider(curr, incr):
+    t_min, t_max, t_list = utils.compute_t_range(currtag=curr, incrtag=incr)
+
+    return html.Div(
+        dcc.Slider(
+            id='pred-ndays-slider',
+            min=1,
+            max=N_days_max,
+            value=1,
+            marks={time: str(time) for time in np.arange(5,N_days_max + 1,25).tolist()},
+            #marks={time: str(time) for time in [1,2,3,4,5]},
+            step=1,
+        )
+    )  
+
 
 @app.callback(Output('tab-pred-slider', 'children'),
               [Input('tab-pred-curr-dropdown', 'value'),

@@ -32,8 +32,7 @@ tab_sim_layout = html.Div([
         dcc.Dropdown(
             id='tab-sim-transf-dropdown',
             options=[{'label': i, 'value': i} for i in ['Diff.', 'Log ratio', 'Raw']],
-            #value='Raw',
-            value='Diff.',
+            value='Raw',
             style={'width': '150px', 'marginLeft': '.5em'},
         ),        
 
@@ -67,7 +66,7 @@ tab_sim_layout = html.Div([
         dcc.Dropdown(
             id='tab-sim-ndays-dropdown',
             options=[{'label': str(i), 'value': i} for i in [50, 100, 250]],
-            value=250,
+            value=50,
             style={'width': '100px', 'marginLeft': '.5em'},
         ),  
 

@@ -54,25 +54,20 @@ tab_pred_layout = html.Div([
             style={'width': '150px', 'marginLeft': '.5em'},
         ),
 
-        html.H6('# Days:', style={'marginLeft': '3em'}),
-        dcc.Dropdown(
-            id='tab-pred-ndays-dropdown',
-            options=[{'label': str(i), 'value': i} for i in [50, 100, 250]],
-            value=250,
-            style={'width': '100px', 'marginLeft': '.5em'},
-        ),  
-
         #Add button to recalculate paths.
         ], style={'display': 'flex', 'marginTop': '1.5em'}), 
 
-    dcc.Graph(id='tab-pred-graph'),
+    html.Div([
+        dcc.Graph(id='tab-pred-graph'),
+        html.Div(id='tab-pred-ndays-slider', style={'width': '40%','padding-left':'30%', 'padding-right':'30%'})
+    ]),
  
     html.Div([
         html.Div(
             id='tab-pred-slider',
             style={'width': '100%'}
             ),
-    ], style={'marginBottom': 25, 'marginLeft': 100, 'marginRight': 100}),
+    ], style={'marginTop': 50, 'marginBottom': 25, 'marginLeft': 100, 'marginRight': 100}),
 
     html.Div(
         id='tab-pred-slider-container',
