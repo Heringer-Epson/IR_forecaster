@@ -1,5 +1,6 @@
 import sys
 import os
+import json
 import utils
 import numpy as np
 from dash.dependencies import Input, Output, State
@@ -15,15 +16,14 @@ from forward_term import Forward_Term
 
 N_days_max = 250
 
-@app.callback(Output('tab-pred-graph', 'figure'),
+@app.callback(Output('tab-pred-intermediate-matrix', 'children'),
               [Input('tab-pred-curr-dropdown', 'value'),
                Input('tab-pred-transf-dropdown', 'value'),
                Input('tab-pred-incr-radio', 'value'),
                Input('pred-year-slider', 'value'),
                Input('tab-pred-model-dropdown', 'value'),
-               Input('tab-pred-distr-dropdown', 'value'),
-               Input('pred-ndays-slider', 'value')],)
-def tab_pred_graph(curr, transf, incr, date_range, model, distr, ndays):
+               Input('tab-pred-distr-dropdown', 'value')],)
+def tab_calculate_term(curr, transf, incr, date_range, model, distr):
 
     application = utils.transf2application[transf]
     IR_key = utils.transf2IR[transf]
@@ -32,19 +32,22 @@ def tab_pred_graph(curr, transf, incr, date_range, model, distr, ndays):
     M = Preproc_Data(curr=curr, incr=[int(incr)], t_ival=[t_min, t_max],
                      application=application).run()
 
-
     tenors = M['tenor'] #Using the default tenors. i.e. [1,2,3,6,12]
 
     merged_df = utils.merge_dataframes([M], [curr], tenors, [incr], IR_key)
     matrix = np.transpose(merged_df.values)
-
     paths, mean, std = Forward_Term(matrix, model, distr, N_days_max).run()
-    #df = M['{}m_{}d'.format(str(tenor), incr)]
-    #t_current = df['date'].values[::-1][-1] #Such that -1 index is current.
+    out_json = [mean, std, tenors]
+    return json.dumps(out_json)
 
+@app.callback(Output('tab-pred-graph', 'figure'),
+              [Input('tab-pred-intermediate-matrix', 'children'),
+               Input('pred-ndays-slider', 'value')],)
+def tab_pred_graph(mean_std_json, ndays):
 
-    traces = []
+    mean, std, tenors = json.loads(mean_std_json)
     
+    traces = []
     traces.append(go.Scattergl(
         x=tenors,
         y=mean[ndays - 1],
@@ -84,7 +87,6 @@ def tab_IR_t_slider(curr, incr):
             step=1,
         )
     )  
-
 
 @app.callback(Output('tab-pred-slider', 'children'),
               [Input('tab-pred-curr-dropdown', 'value'),

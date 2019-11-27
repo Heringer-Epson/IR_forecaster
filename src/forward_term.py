@@ -90,4 +90,4 @@ class Forward_Term(object):
         self.generate_random()
         self.calculate_paths()
         self.prepare_output()
-        return self.paths, np.transpose(self.mean), np.transpose(self.std)
+        return self.paths, np.transpose(self.mean).tolist(), np.transpose(self.std).tolist()

@@ -72,4 +72,7 @@ tab_pred_layout = html.Div([
     html.Div(
         id='tab-pred-slider-container',
         style={'textAlign': 'center'},),
+        
+    #Hidden tab for expensive calculation of matrix of paths for forward days.
+    html.Div(id='tab-pred-intermediate-matrix', style={'display': 'none'})
 ])
