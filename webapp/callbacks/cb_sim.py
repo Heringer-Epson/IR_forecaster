@@ -35,7 +35,9 @@ def tab_sim_graph(curr, tenor, transf, incr, date_range, model, distr, ndays,
 
     merged_df = utils.merge_dataframes([M], [curr], [tenor], [incr], IR_key)
     matrix = np.transpose(merged_df.values)
-    paths, mean, std = Forward_Term(matrix, model, distr, ndays, npaths).run()
+    guess = utils.pars2guess[transf + '_' + model]
+
+    paths, mean, std = Forward_Term(matrix, model, distr, guess, ndays, npaths).run()
 
     traces = []
     time_array = np.arange(0,ndays + 1.e-5,1)

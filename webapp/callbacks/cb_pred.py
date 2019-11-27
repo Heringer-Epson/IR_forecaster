@@ -35,7 +35,9 @@ def tab_calculate_term(curr, transf, incr, date_range, model, distr):
 
     merged_df = utils.merge_dataframes([M], [curr], tenors, [incr], IR_key)
     matrix = np.transpose(merged_df.values)
-    paths, mean, std = Forward_Term(matrix, model, distr, N_days_max).run()
+    guess = utils.pars2guess[transf + '_' + model]
+
+    paths, mean, std = Forward_Term(matrix, model, distr, guess, N_days_max).run()
     out_json = [mean, std, tenors]
     return json.dumps(out_json)
 

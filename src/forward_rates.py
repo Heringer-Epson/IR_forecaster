@@ -32,16 +32,17 @@ class Forward_Rates(object):
             mu, sigma = self.fit[0], self.fit[1]
             step = np.exp((mu - sigma**2./2.)*dt
                           + sigma*self.random_array)
-            self.X_forward = [self.X_0] + list(self.X_0 * step.cumprod())    
-            #self.X_forward = self.X_0 * np.cumprod(step)    
+            self.X_forward = [self.X_0] + list(self.X_0 * np.cumprod(step))    
 
         if self.model == 'Vasicek':
             theta1, theta2, theta3 = self.fit[0], self.fit[1], self.fit[2]
             self.X_forward = [self.X_0]
+                        
             for i in range(len(self.random_array)):
                 self.X_forward.append(
-                  theta1*(theta2 - self.X_forward[i])
-                  + theta3*self.random_array[i]) #np.cumsum
+                  self.X_forward[i]
+                  + theta1*(theta2 - self.X_forward[i])
+                  + theta3*self.random_array[i])
             
     def run(self):
         self.retrieve_function()

@@ -16,10 +16,11 @@ class Forward_Term(object):
     -----------
     TBW.
     """        
-    def __init__(self, matrix, model, distr, ndays, npaths=10):
+    def __init__(self, matrix, model, distr, guess, ndays, npaths=10):
         self.matrix = matrix
-        self.distr = distr
         self.model = model
+        self.distr = distr
+        self.guess = guess
         self.ndays = ndays
         self.npaths = npaths
         
@@ -33,7 +34,8 @@ class Forward_Term(object):
 
     def get_fit_pars(self):
         for X in self.matrix:
-            self.fit.append(Fit_Simpars(X, self.model).run())
+            self.fit.append(Fit_Simpars(X, self.model, self.guess).run())
+        print(self.fit)
 
     def calculate_corr_matrix(self):
         corr_matrix = np.corrcoef(self.matrix)

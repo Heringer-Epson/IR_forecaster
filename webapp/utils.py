@@ -15,6 +15,15 @@ transf2IR = {'Raw':'ir', 'Diff.':'ir_transf', 'Log ratio':'ir_transf'}
 currtag2curr = {'USD':['USD'], 'CAD':['CAD'], 'USD & CAD':['USD', 'CAD']}
 incrtag2incr = {'1':[1], '25':[25], '1 & 25':[1, 25]}
 
+pars2guess = {
+  'Raw_Vasicek': 'theta1=0.1, theta2=0.1, theta3=0.05',
+  'Diff._Vasicek': 'theta1=0.0001, theta2=1., theta3=0.005',
+  'Log ratio_Vasicek': 'theta1=0.0001, theta2=1., theta3=0.005',
+  'Raw_Brownian': 'theta1=0.005, theta2=0.005',
+  'Diff._Brownian': 'theta1=0.003, theta2=0.00001', ##Improve
+  'Log ratio_Brownian': 'theta1=0.005, theta2=0.005' ##Improve
+}
+
 def sort_pdfs(D, pdfs):
     aux = {}
     for pdf in pdfs:

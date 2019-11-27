@@ -29,9 +29,10 @@ class Fit_Simpars(object):
     -----------
     TBW.
     """        
-    def __init__(self, X, model):
+    def __init__(self, X, model, guess):
         self.X = X
         self.model = model
+        self.guess = guess
         
         self.fitter = None
         self.fit = None
@@ -67,12 +68,12 @@ class Fit_Simpars(object):
               fx <- expression( theta[1]*(theta[2] - x) )
               gx <- expression( theta[3] )
               fitmod <- fitsde(data = data, drift = fx, diffusion = gx,
-                               start = list(theta1=-0.001, theta2=0.0, theta3=0.005),
-                               pmle="kessler")
+                               start = list(%s),
+                               pmle="euler", lower=c(-Inf,0,0))
               sol = coef(fitmod)
               return(sol)
               }
-              """
+              """ %(self.guess)
               )
  
         elif self.model == 'Brownian':
@@ -82,12 +83,12 @@ class Fit_Simpars(object):
               fx <- expression( theta[1]*x )
               gx <- expression( theta[2]*x )
               fitmod <- fitsde(data = data, drift = fx, diffusion = gx,
-                               start = list(theta1=0.005, theta2=0.005),
-                               pmle="kessler")
+                               start = list(%s),
+                               pmle="euler", lower=c(-Inf,0))
               sol = coef(fitmod)
               return(sol)
               }
-              """
+              """ %(self.guess)
               )
 
         else:
