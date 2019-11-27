@@ -12,9 +12,7 @@ class Preproc_Data(object):
                 
     RETURN:
     -------
-    A dataframe with the following columns:
-      $date: array of np.datetime64 times.
-      $ir: intrabank interest rate
+    TBW
     """    
     
     def __init__(self, curr='USD', incr=[1,25], tenor=[1,2,3,6,12],

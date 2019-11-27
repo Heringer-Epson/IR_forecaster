@@ -15,10 +15,6 @@ class Forward_Term(object):
     Parameters:
     -----------
     TBW.
-
-    Outputs:
-    --------
-    ./../OUTPUTS/RUNS/Fig_corr.pdf
     """        
     def __init__(self, matrix, model, distr, ndays, npaths=10):
         self.matrix = matrix
@@ -56,19 +52,15 @@ class Forward_Term(object):
           for j in range(self.npaths)]
     
     def calculate_paths(self):
-        
         for i in range(self.Nt): #loop over tenor
             X_0 = self.matrix[i][-1]
             random_numbers = np.zeros(self.npaths)
-            #print(random_numbers)
             self.paths[str(i)] = [Forward_Rates(
               X_0, self.fit[i], self.model, np.transpose(self.random_number[j])[i]).run() for j in range(self.npaths)]
-            #print(self.paths[str(i)])
             
     def prepare_output(self):
         #Make output matrix where each row is a day and columns store the
         #mean and standard deviation for each term.
-        
         #self.paths[tenor][npaths][ndays]
         #self.paths[tenor][ndays][npaths] #After transposing.
         for j in range(self.Nt):

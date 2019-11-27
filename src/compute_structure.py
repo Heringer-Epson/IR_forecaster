@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 
-import numpy as np
-import pandas as pd
-
 class Compute_Structure(object):
     """
     Description:

@@ -1,16 +1,13 @@
 #!/usr/bin/env python
 
-import os
 import math
 import numpy as np
-import pandas as pd
 import scipy.stats
 
 class Fit_Distr(object):
     """
     TBW.
     """    
-    
     def __init__(self, y):
         self.y = y
         
@@ -41,17 +38,14 @@ class Fit_Distr(object):
             
             #Fit distribution and get most likely parameters.
             pars = eval('scipy.stats.' + pdf + '.fit(self.y)')
-            #print(pdf, pars)
             
             if not any([math.isnan(p) for p in pars]):
                 arg = ', '.join([str(val) for val in pars])
                 y_theor = eval(
                   'scipy.stats.' + pdf + '.pdf(xdom, '+ arg + ')')
      
-                #Compute and print goodness of fit KS test.
+                #Compute goodness of fit using KS test.
                 D, p = scipy.stats.kstest(self.y, pdf, args=pars)
-                #print(pdf.ljust(18) + ('D: {}'.format(D).ljust(30))
-                #      + ('p: {}'.format(p).ljust(45)))
             else:
                 p = 0.
             

@@ -1,20 +1,14 @@
 #!/usr/bin/env python
 
-import os
-import numpy as np
-import pandas as pd
-
 import rpy2.robjects as robjects
 import rpy2.robjects.packages as rpackages
 from rpy2.robjects.vectors import StrVector
-from rpy2.robjects.packages import importr
 
 rstats = rpackages.importr('stats')
 utils = rpackages.importr('utils')
 base = rpackages.importr('base')
+rpackages.importr("Sim.DiffProc")
 utils.chooseCRANmirror(ind=1)
-
-importr("Sim.DiffProc")
 
 #References
 #https://rpy2.readthedocs.io/en/version_2.8.x/introduction.html
@@ -34,10 +28,6 @@ class Fit_Simpars(object):
     Parameters:
     -----------
     TBW.
-
-    Outputs:
-    --------
-    ./../OUTPUTS/RUNS/Fig_corr.pdf
     """        
     def __init__(self, X, model):
         self.X = X

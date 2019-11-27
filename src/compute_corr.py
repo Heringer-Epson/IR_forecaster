@@ -2,11 +2,9 @@
 
 import sys
 import os
-import numpy as np
 import pandas as pd
 
 from preprocess_data import Preproc_Data
-
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'webapp'))
 import utils
 
@@ -19,10 +17,6 @@ class Compute_Corr(object):
     Parameters:
     -----------
     TBW.
-
-    Outputs:
-    --------
-    ./../OUTPUTS/RUNS/Fig_corr.pdf
     """        
     def __init__(self, currtag='USD', tenor=[1,2,3,6,12], incrtag='1',
                  transf='Raw', t_range=None):

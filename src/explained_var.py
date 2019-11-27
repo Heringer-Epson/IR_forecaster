@@ -12,10 +12,6 @@ class Explained_Var(object):
     Parameters:
     -----------
     TBW.
-
-    Outputs:
-    --------
-    ./../OUTPUTS/RUNS/Fig_corr.pdf
     """        
     def __init__(self, merged_df):
         self.merged_df = merged_df
