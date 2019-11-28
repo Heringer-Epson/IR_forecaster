@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import numpy as np
+from pars import Inp_Pars
 
 class Forward_Rates(object):
     """
@@ -25,12 +26,10 @@ class Forward_Rates(object):
         self.model_func = None
         self.X_forward = None
 
-    def retrieve_function(self):
-        dt = 1./253.
-        
+    def retrieve_function(self):       
         if self.model == 'Brownian':
             mu, sigma = self.fit[0], self.fit[1]
-            step = np.exp((mu - sigma**2./2.)*dt
+            step = np.exp((mu - sigma**2./2.)*Inp_Pars.dt
                           + sigma*self.random_array)
             self.X_forward = [self.X_0] + list(self.X_0 * np.cumprod(step))    
 
@@ -41,7 +40,7 @@ class Forward_Rates(object):
             for i in range(len(self.random_array)):
                 self.X_forward.append(
                   self.X_forward[i]
-                  + theta1*(theta2 - self.X_forward[i])
+                  + theta1*(theta2 - self.X_forward[i])*Inp_Pars.dt
                   + theta3*self.random_array[i])
             
     def run(self):

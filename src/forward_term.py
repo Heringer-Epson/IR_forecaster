@@ -3,6 +3,7 @@
 import numpy as np
 from scipy.linalg import cholesky
 
+from pars import Inp_Pars
 from fit_simpars import Fit_Simpars
 from forward_rates import Forward_Rates
 
@@ -17,7 +18,7 @@ class Forward_Term(object):
     TBW.
     """        
     def __init__(self, matrix, model, transf, distr, current_IR, guess, ndays,
-                 npaths=10):
+                 npaths=Inp_Pars.MC_npaths):
         self.matrix = matrix
         self.model = model
         self.transf = transf
@@ -45,8 +46,7 @@ class Forward_Term(object):
         self.dec = cholesky(corr_matrix, lower=False)
 
     def generate_random(self):
-        dt = 1./253.
-        scale = np.sqrt(dt)
+        scale = np.sqrt(Inp_Pars.dt)
                         
         #For each path, calculate a matrix of correlated random numbers, where
         #nrows = ndays and ncols=ntenors. If there is only only tenor, the

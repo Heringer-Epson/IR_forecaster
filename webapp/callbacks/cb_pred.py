@@ -10,10 +10,9 @@ from server import app
 
 import utils
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
+from pars import Inp_Pars
 from preprocess_data import Preproc_Data
 from forward_term import Forward_Term
-
-N_days_max = 250
 
 @app.callback(Output('tab-pred-intermediate-matrix', 'children'),
               [Input('tab-pred-curr-dropdown', 'value'),
@@ -40,7 +39,7 @@ def tab_calculate_term(curr, transf, incr, date_range, model, distr):
     guess = utils.pars2guess[transf + '_' + model]
 
     paths, mean, std = Forward_Term(
-      matrix, model, transf, distr, current_IR, guess, N_days_max).run()
+      matrix, model, transf, distr, current_IR, guess, Inp_Pars.T_sim).run()
     out_json = [mean, std, tenors, current_date]
     return json.dumps(out_json)
 
@@ -83,9 +82,9 @@ def tab_IR_t_slider(curr, incr):
         dcc.Slider(
             id='pred-ndays-slider',
             min=1,
-            max=N_days_max,
+            max=Inp_Pars.T_sim,
             value=1,
-            marks={time: str(time) for time in np.arange(5,N_days_max + 1,25).tolist()},
+            marks={time: str(time) for time in np.arange(5,Inp_Pars.T_sim + 1,25).tolist()},
             step=1,
         )
     )  
