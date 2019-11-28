@@ -42,12 +42,12 @@ class Preproc_Data(object):
         return df
 
     def remove_spikes(self, df, key):
-        window = 9
-        ir = df['ir'].values
+        window = 17
+        ir = df[key].values
         ir_smooth = savgol_filter(ir, window, 3)
         std = pd.Series(ir).rolling(window).std()
         std[0:window] = 0. #always keep the elements with incomplete windows.
-        cond = (ir < ir_smooth + 3.*std)
+        cond = (abs(ir) < abs(ir_smooth) + 3.*std)
         df = df[cond.values]
         return df
 
