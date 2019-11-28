@@ -27,8 +27,10 @@ from callbacks import cb_pca
 from callbacks import cb_sim
 from callbacks import cb_pred
 
+app.title = 'IR Forecaster'
+
 app.layout = html.Div([
-    html.H1('Analysis of Intrabank Rates'),
+    #html.H1('Analysis of Intrabank Rates'),
     dcc.Tabs(id='tabs-main', value='tab-about', children=[
         dcc.Tab(label='About', value='tab-about'),
         dcc.Tab(label='IR', value='tab-IR'),

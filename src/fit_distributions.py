@@ -6,7 +6,21 @@ import scipy.stats
 
 class Fit_Distr(object):
     """
-    TBW.
+    Description:
+    ------------
+    Given an array of values, fit several pdfs to their histogram.
+
+    Parameters:
+    -----------
+    y : ~np.array
+        Array of values to be fitted, IRs or transformed IRs.
+ 
+    Return:
+    -------
+    hist: The histogram of y.
+    bins: The centered bins for the histogram of y.
+    fit_dict: A dictionary containing properties of each of the fitted pdfs.
+    pdfs: The list of fitted pdfs.
     """    
     def __init__(self, y):
         self.y = y
@@ -41,6 +55,7 @@ class Fit_Distr(object):
             
             if not any([math.isnan(p) for p in pars]):
                 arg = ', '.join([str(val) for val in pars])
+                rng_expr = 'scipy.stats.' + pdf + '.rvs(' + arg + ', size='
                 y_theor = eval(
                   'scipy.stats.' + pdf + '.pdf(xdom, '+ arg + ')')
      
@@ -50,6 +65,7 @@ class Fit_Distr(object):
                 p = 0.
             
             self.fit_dict['y_' + pdf] = y_theor
+            self.fit_dict['rng_' + pdf] = rng_expr
             self.fit_dict['p_' + pdf] = p
             self.fit_dict['D_' + pdf] = D
         self.fit_dict['x'] = xdom

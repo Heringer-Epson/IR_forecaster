@@ -7,16 +7,28 @@ class Forward_Rates(object):
     """
     Description:
     ------------
-    TBW.
+    For a given fitted financial model, compute a realization of future
+    IRs (or transformed IRs).
 
     Parameters:
     -----------
-    TBW.
+    X_0 : ~float
+        The current IR (or transformed IR).
+    fit : ~list of floats
+        A list containing the fits for the financial model to be used.
+    model : ~str
+        Specifies which financial model to use.
+    random_array : np.array
+        Array containing a sequence of random numbers to compute future rates.
 
-    Outputs:
-    --------
-    ./../OUTPUTS/RUNS/Fig_corr.pdf
-    """        
+    Notes:
+    ------
+    The number of steps is implicitly determined by the size of random_array.
+
+    Return:
+    -------
+    X_forward: An array containing a realization of future rates.
+    """         
     def __init__(self, X_0, fit, model, random_array):
         self.X_0 = X_0
         self.fit = fit

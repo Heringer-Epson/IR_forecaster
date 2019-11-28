@@ -23,11 +23,27 @@ class Fit_Simpars(object):
     """
     Description:
     ------------
-    TBW.
+    Computes the best fit parameters for a given choice of stochastic
+    differential equation (sde).
 
     Parameters:
     -----------
-    TBW.
+    X : ~np.array
+        Array to be fitted. It contains IR (or transformed IR) data.
+    model : ~str
+        Which financial model to be fitted. Currently accepts:
+            'Brownian', for the geometric brownian model.
+            'Vasicek', for the Vasicel (a.k.a. Ornstein–Uhlenbeck) model.
+    guess : ~str
+        A string containing the initial guess parameters for the taget model.
+    
+    Notes:
+    ------
+    Requires the 'Sim.DiffProc' R package to have been previously installed.
+
+    Return:
+    -------
+    fit: A list containing the best fit parameters.
     """        
     def __init__(self, X, model, guess):
         self.X = X

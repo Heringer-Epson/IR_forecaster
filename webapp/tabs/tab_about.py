@@ -39,7 +39,7 @@ tab_about_layout = html.Div([
                     """
                     ###### OVERVIEW
                     This web app provides interactive plotting and analytical
-                    functions to faciliate the analysis
+                    functions to facilitate the analysis
                     
                     of intrabank rates. The user may choose to work with
                     transformed rates (rate differences or
@@ -52,14 +52,14 @@ tab_about_layout = html.Div([
                     Future rates are estimated using a Monte Carlo simulation,
                     where random rates (or mapped rates)
                     
-                    are drawn from the distribution that best fits the data.
-                    The user may choose which finance model
+                    are drawn from the distributions that best fits each tenor.
+                    The user may also choose which finance model
                     
-                    to use to compute forward rates. The correlation between
-                    tenors is taken into account and there
+                    to use to compute forward rates, noting that the correlation 
+                    between tenors is taken into account.
                     
-                    is an option to use principal component analysis to reduce
-                    the dimensionality of the data.
+                    Finally, the user may enable the principal component analysis
+                    (PCA) option to reduce the dimensionality of the data.
 
                     &nbsp;&nbsp;&nbsp;&nbsp;
                     
@@ -73,7 +73,7 @@ tab_about_layout = html.Div([
 
                     ###### TECHNICAL DETAILS
                     
-                    This web app is deployed on the Google Cloud Plataform
+                    This web app is deployed on the Google Cloud Platform
                     and is written in python 3.7, using Dash.
                     
                     Finance models are implemented via an R wrapper to call

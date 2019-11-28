@@ -6,7 +6,6 @@ from dash.dependencies import Input, Output
 import dash_html_components as html
 import dash_core_components as dcc
 import plotly.graph_objs as go
-import dash_table
 
 from server import app
 
@@ -28,7 +27,6 @@ def tab_corr_graph(currtag, transf, incrtag, date_range):
       currtag=currtag, incrtag=incrtag, transf=transf, t_range=[t_min, t_max]).run()
 
     traces = []
-    
     traces.append(go.Heatmap(
         z=corr_matrix,
         x=columns,

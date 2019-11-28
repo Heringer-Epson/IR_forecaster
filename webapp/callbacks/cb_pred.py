@@ -37,9 +37,10 @@ def tab_calculate_term(curr, transf, incr, date_range, model, distr):
     current_date = str(merged_df.index[0])[0:10]
     matrix = np.transpose(merged_df.values)
     guess = utils.pars2guess[transf + '_' + model]
+    rng_expr = utils.retrieve_rng_generators(matrix, distr)
 
     paths, mean, std = Forward_Term(
-      matrix, model, transf, distr, current_IR, guess, Inp_Pars.T_sim).run()
+      matrix, model, transf, rng_expr, current_IR, guess, Inp_Pars.T_sim).run()
     out_json = [mean, std, tenors, current_date]
     return json.dumps(out_json)
 

@@ -26,7 +26,8 @@ def tab_pca_graph(curr, transf, incr, date_range):
                      application=application).run()
     
     merged_df = utils.merge_dataframes([M], [curr], M['tenor'], [incr], IR_key)    
-    n_pca_array, exp_var = Explained_Var(merged_df).run()
+    print(merged_df.shape)
+    n_pca_array, exp_var = Explained_Var(merged_df.values).run()
     
     traces = []
     traces.append(go.Scattergl(

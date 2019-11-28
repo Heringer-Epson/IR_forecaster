@@ -6,7 +6,9 @@ import pandas as pd
 from datetime import datetime as dt
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
+from pars import Inp_Pars
 from preprocess_data import Preproc_Data
+from fit_distributions import Fit_Distr
 
 #Conversors.
 transf2application = {'Raw':'simple_diff', 'Diff.':'simple_diff',
@@ -102,3 +104,19 @@ def get_current_ir(M, tenor, incr):
     current_IR = np.array(
       [M['{}m_{}d'.format(str(t),str(incr))]['ir'].values[-1] for t in tenor]) 
     return current_IR
+
+def retrieve_rng_generators(matrix, distr):
+    #Loop through each tenor to retrieve y (IR or IR_transf).
+    rng_expr = []
+    if distr == 'Best fit':
+        for y in matrix:
+            hist, bins, fit_dict, pdfs = Fit_Distr(y).run_fitting()
+            sorted_pdfs = sort_pdfs(fit_dict, pdfs)
+            best_pdf = sorted_pdfs[0]
+            rng_expr.append(fit_dict['rng_' + best_pdf])
+    elif distr == 'Normal':
+        scale = np.sqrt(Inp_Pars.dt)
+        for y in matrix:
+            rng_expr.append('np.random.normal(0., ' + str(scale) + ', size=')
+    
+    return rng_expr
