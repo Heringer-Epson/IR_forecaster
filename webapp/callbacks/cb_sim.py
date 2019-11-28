@@ -35,6 +35,7 @@ def tab_sim_graph(curr, tenor, transf, incr, date_range, model, distr, ndays,
 
     current_IR = utils.get_current_ir(M, [tenor], incr)
     merged_df = utils.merge_dataframes([M], [curr], [tenor], [incr], IR_key)
+
     matrix = np.transpose(merged_df.values)
     guess = utils.pars2guess[transf + '_' + model]
 
@@ -43,6 +44,7 @@ def tab_sim_graph(curr, tenor, transf, incr, date_range, model, distr, ndays,
 
     traces = []
     time_array = np.arange(0,ndays + 1.e-5,1)
+    current_date = str(merged_df.index[0])[0:10]
     for path in paths[str(int(tenor) - 1)]:
         traces.append(go.Scattergl(
             x=time_array,
@@ -56,8 +58,7 @@ def tab_sim_graph(curr, tenor, transf, incr, date_range, model, distr, ndays,
     return {
         'data': traces,
         'layout': dict(
-            #xaxis={'title': t_current + '  +  t [days]',},
-            xaxis={'title': 't [days]',},
+            xaxis={'title': current_date + '  +  t [days]',},
             yaxis={'title': 'IR',},
             hovermode='closest',
         )}

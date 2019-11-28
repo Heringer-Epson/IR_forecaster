@@ -61,7 +61,7 @@ def merge_dataframes(list_M, list_curr, list_tenor, list_incr, qtty):
 
 def make_transf_label(transf, incr=None):
     if incr is None:
-        T = 'T'
+        T = 't'
     else:
         T = '{} day'.format(str(incr))
     if transf == 'Diff.':

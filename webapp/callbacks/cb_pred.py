@@ -35,12 +35,13 @@ def tab_calculate_term(curr, transf, incr, date_range, model, distr):
     current_IR = utils.get_current_ir(M, tenors, incr)
 
     merged_df = utils.merge_dataframes([M], [curr], tenors, [incr], IR_key)
+    current_date = str(merged_df.index[0])[0:10]
     matrix = np.transpose(merged_df.values)
     guess = utils.pars2guess[transf + '_' + model]
 
     paths, mean, std = Forward_Term(
       matrix, model, transf, distr, current_IR, guess, N_days_max).run()
-    out_json = [mean, std, tenors]
+    out_json = [mean, std, tenors, current_date]
     return json.dumps(out_json)
 
 @app.callback(Output('tab-pred-graph', 'figure'),
@@ -48,7 +49,7 @@ def tab_calculate_term(curr, transf, incr, date_range, model, distr):
                Input('pred-ndays-slider', 'value')],)
 def tab_pred_graph(mean_std_json, ndays):
 
-    mean, std, tenors = json.loads(mean_std_json)
+    mean, std, tenors, current_date = json.loads(mean_std_json)
     
     traces = []
     traces.append(go.Scattergl(
@@ -67,8 +68,7 @@ def tab_pred_graph(mean_std_json, ndays):
     return {
         'data': traces,
         'layout': dict(
-            #xaxis={'title': t_current + '  +  t [days]',},
-            xaxis={'title': 't [days]',},
+            xaxis={'title': current_date + '  +  t [days]',},
             yaxis={'title': 'IR',},
             hovermode='closest',
         )}

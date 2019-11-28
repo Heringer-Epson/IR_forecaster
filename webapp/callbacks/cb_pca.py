@@ -41,6 +41,8 @@ def tab_pca_graph(curr, transf, incr, date_range):
     return {
         'data': traces,
         'layout': dict(
+            xaxis={'title': 'Number of Principal Components',},
+            yaxis={'title': 'Explained Variance [%]',},
             hovermode='closest',
         )
     }
