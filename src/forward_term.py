@@ -16,10 +16,13 @@ class Forward_Term(object):
     -----------
     TBW.
     """        
-    def __init__(self, matrix, model, distr, guess, ndays, npaths=10):
+    def __init__(self, matrix, model, transf, distr, current_IR, guess, ndays,
+                 npaths=10):
         self.matrix = matrix
         self.model = model
+        self.transf = transf
         self.distr = distr
+        self.current_IR = current_IR
         self.guess = guess
         self.ndays = ndays
         self.npaths = npaths
@@ -35,7 +38,7 @@ class Forward_Term(object):
     def get_fit_pars(self):
         for X in self.matrix:
             self.fit.append(Fit_Simpars(X, self.model, self.guess).run())
-        print(self.fit)
+        #print(self.fit)
 
     def calculate_corr_matrix(self):
         corr_matrix = np.corrcoef(self.matrix)
@@ -53,12 +56,24 @@ class Forward_Term(object):
           np.dot(np.random.normal(0., scale, (self.ndays,self.Nt)), self.dec) 
           for j in range(self.npaths)]
     
-    def calculate_paths(self):
+    def calculate_forward(self):
         for i in range(self.Nt): #loop over tenor
             X_0 = self.matrix[i][-1]
             random_numbers = np.zeros(self.npaths)
-            self.paths[str(i)] = [Forward_Rates(
-              X_0, self.fit[i], self.model, np.transpose(self.random_number[j])[i]).run() for j in range(self.npaths)]
+            self.paths[str(i)] = np.array([Forward_Rates(
+              X_0, self.fit[i], self.model, np.transpose(
+              self.random_number[j])[i]).run() for j in range(self.npaths)])
+
+    def convert_IR(self):
+        if self.transf == 'Diff.':
+            for i in range(self.Nt): #loop over tenor
+                for j in range(self.npaths):
+                    self.paths[str(i)][j] += self.current_IR[i]
+
+        elif self.transf == 'Log ratio':
+            for i in range(self.Nt): #loop over tenor
+                for j in range(self.npaths):
+                    self.paths[str(i)][j] = self.current_IR[i] * np.exp(self.paths[str(i)][j])             
             
     def prepare_output(self):
         #Make output matrix where each row is a day and columns store the
@@ -74,6 +89,7 @@ class Forward_Term(object):
         self.get_fit_pars()
         self.calculate_corr_matrix()
         self.generate_random()
-        self.calculate_paths()
+        self.calculate_forward()
+        self.convert_IR()
         self.prepare_output()
         return self.paths, np.transpose(self.mean).tolist(), np.transpose(self.std).tolist()

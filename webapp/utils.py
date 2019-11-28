@@ -97,3 +97,8 @@ def compute_t_range(currtag='USD', incrtag='1', tenor=[1,2,3,6,12]):
 
     t_list = [int(t) for t in np.arange(t_min,t_max + 0.0001,1)]
     return t_min, t_max, t_list
+
+def get_current_ir(M, tenor, incr):
+    current_IR = np.array(
+      [M['{}m_{}d'.format(str(t),str(incr))]['ir'].values[-1] for t in tenor]) 
+    return current_IR

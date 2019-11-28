@@ -47,8 +47,8 @@ tab_sim_layout = html.Div([
         dcc.Dropdown(
             id='tab-sim-model-dropdown',
             options=[{'label': i, 'value': i} for i in ['Vasicek', 'Brownian']],
-            value='Brownian',
-            #value='Vasicek',
+            #value='Brownian',
+            value='Vasicek',
             style={'width': '150px', 'marginLeft': '.5em'},
         ),       
        
