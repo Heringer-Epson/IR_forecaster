@@ -1,17 +1,15 @@
 import sys
 import os
-import utils
 import numpy as np
 from dash.dependencies import Input, Output
 import dash_html_components as html
 import dash_core_components as dcc
 import plotly.graph_objs as go
-
 from server import app
 
+import utils
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 from preprocess_data import Preproc_Data
-from compute_corr import Compute_Corr
 
 @app.callback(Output('tab-corr-graph', 'figure'),
               [Input('tab-corr-curr-dropdown', 'value'),
@@ -23,14 +21,22 @@ def tab_corr_graph(currtag, transf, incrtag, date_range):
     application = utils.transf2application[transf]
     t_min, t_max = utils.format_date(date_range)
 
-    corr_matrix, columns = Compute_Corr(
-      currtag=currtag, incrtag=incrtag, transf=transf, t_range=[t_min, t_max]).run()
+    tenor_list = [1,2,3,6,12]
+    IR_key = utils.transf2IR[transf]   
+    curr_list = utils.currtag2curr[currtag]
+    incr_list = utils.incrtag2incr[incrtag]
+    M_list = [
+      Preproc_Data(curr=curr, incr=incr_list, tenor=tenor_list, application=application,
+        t_ival=[t_min, t_max]).run() for curr in curr_list]
+
+    merged_df = utils.merge_dataframes(M_list, curr_list, tenor_list, incr_list, IR_key)
+    columns = merged_df.columns
 
     traces = []
     traces.append(go.Heatmap(
-        z=corr_matrix,
-        x=columns,
-        y=columns,
+        z=merged_df.corr(),
+        x=merged_df.columns,
+        y=merged_df.columns,
         colorscale='balance', #'curl', 'delta'
         zmid=0,
     ))
