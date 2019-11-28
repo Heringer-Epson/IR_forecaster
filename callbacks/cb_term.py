@@ -1,5 +1,3 @@
-import sys
-import os
 import numpy as np
 from dash.dependencies import Input, Output
 import dash_html_components as html
@@ -8,7 +6,6 @@ import plotly.graph_objs as go
 from server import app
 
 import utils
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 from preprocess_data import Preproc_Data
 from compute_structure import Compute_Structure
 

@@ -1,5 +1,3 @@
-import sys
-import os
 from dash.dependencies import Input, Output
 import dash_html_components as html
 import dash_core_components as dcc
@@ -8,7 +6,6 @@ import dash_table
 from server import app
 
 import utils
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 from preprocess_data import Preproc_Data
 from fit_distributions import Fit_Distr
 

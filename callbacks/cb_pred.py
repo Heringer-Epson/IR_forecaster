@@ -1,5 +1,3 @@
-import sys
-import os
 import json
 import numpy as np
 from dash.dependencies import Input, Output, State
@@ -9,7 +7,6 @@ import plotly.graph_objs as go
 from server import app
 
 import utils
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 from pars import Inp_Pars
 from preprocess_data import Preproc_Data
 from forward_term import Forward_Term
@@ -61,8 +58,9 @@ def tab_pred_graph(mean_std_json, ndays):
                 visible=True
             ),
         mode='lines',
-        opacity=.7,
-        line=dict(color='grey', width=1.),
+        opacity=1.,
+        line=dict(color='black', width=3.),
+        marker=dict(color='black', size=10),
         showlegend=False))
     
     return {

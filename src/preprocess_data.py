@@ -50,7 +50,7 @@ class Preproc_Data(object):
         self.M = {}
 
     def load_data(self, tenor):
-        data_dir = './../data/'
+        data_dir = './data/'
         fname = 'LIBOR_' + str(tenor) + 'm_' + self.curr + '.csv'
         fpath = os.path.join(data_dir, fname)
         return pd.read_csv(fpath, header=0, names=['date', 'ir'])[::-1] 

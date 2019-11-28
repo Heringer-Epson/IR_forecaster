@@ -1,5 +1,3 @@
-import sys
-import os
 from dash.dependencies import Input, Output
 import dash_html_components as html
 import dash_core_components as dcc
@@ -7,7 +5,6 @@ import plotly.graph_objs as go
 from server import app
 
 import utils
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 from preprocess_data import Preproc_Data
 from explained_var import Explained_Var
 
@@ -26,7 +23,6 @@ def tab_pca_graph(curr, transf, incr, date_range):
                      application=application).run()
     
     merged_df = utils.merge_dataframes([M], [curr], M['tenor'], [incr], IR_key)    
-    print(merged_df.shape)
     n_pca_array, exp_var = Explained_Var(merged_df.values).run()
     
     traces = []

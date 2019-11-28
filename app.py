@@ -1,5 +1,3 @@
-import sys
-import os
 import dash
 from dash.dependencies import Input, Output
 import dash_html_components as html
@@ -28,7 +26,6 @@ from callbacks import cb_sim
 from callbacks import cb_pred
 
 app.title = 'IR Forecaster'
-
 app.layout = html.Div([
     #html.H1('Analysis of Intrabank Rates'),
     dcc.Tabs(id='tabs-main', value='tab-about', children=[
