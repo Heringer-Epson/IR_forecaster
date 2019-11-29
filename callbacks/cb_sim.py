@@ -16,7 +16,7 @@ from forward_term import Forward_Term
                Input('tab-sim-incr-radio', 'value'),
                Input('sim-year-slider', 'value'),
                Input('tab-sim-model-dropdown', 'value'),
-               Input('tab-sim-distr-dropdown', 'value'),
+               Input('tab-sim-distr-radio', 'value'),
                Input('tab-sim-ndays-dropdown', 'value'),
                Input('tab-sim-npaths-dropdown', 'value'),
                Input('tab-sim-button', 'n_clicks')],)
@@ -52,7 +52,6 @@ def tab_sim_graph(curr, tenor, transf, incr, date_range, model, distr, ndays,
             line=dict(width=1.),
             showlegend=False
         ))
-    
     return {
         'data': traces,
         'layout': dict(
@@ -60,7 +59,19 @@ def tab_sim_graph(curr, tenor, transf, incr, date_range, model, distr, ndays,
             yaxis={'title': 'IR',},
             hovermode='closest',
         )}
-    
+
+#Update the distribution dropdown based on the transformation used.
+@app.callback(
+    Output('tab-sim-distr-radio', 'options'),
+    [Input('tab-sim-transf-dropdown', 'value')])
+def set_distr_options(transf):
+    return [{'label': i, 'value': i} for i in utils.transf2distr_options[transf]]
+
+@app.callback(
+    Output('tab-sim-distr-radio', 'value'),
+    [Input('tab-sim-distr-radio', 'options')])
+def set_distr_value(distr_options):
+    return distr_options[0]['value']
 
 @app.callback(Output('tab-sim-slider', 'children'),
               [Input('tab-sim-curr-dropdown', 'value'),
@@ -69,7 +80,6 @@ def tab_sim_graph(curr, tenor, transf, incr, date_range, model, distr, ndays,
 def tab_IR_t_slider(curr, incr, tenor):
     t_min, t_max, t_list = utils.compute_t_range(
       currtag=curr, incrtag=incr, tenor=[int(tenor)])
-
     return html.Div(
         dcc.RangeSlider(
             id='sim-year-slider',
@@ -86,4 +96,3 @@ def tab_IR_t_slider(curr, incr, tenor):
 def tab_IR_t_slider_container(date_range):
     t_min, t_max = utils.format_date(date_range)
     return 'Date range is "{}" -- "{}"'.format(t_min, t_max)
-

@@ -117,6 +117,20 @@ class Forward_Term(object):
             aux_mat = np.transpose(self.paths[str(j)])
             self.mean.append([np.mean(aux_mat[i]) for i in range(self.ndays)])
             self.std.append([np.std(aux_mat[i]) for i in range(self.ndays)])
+
+        '''
+        #Tenor 1mon
+        print('1mon')
+        aux_mat = np.transpose(self.paths[str(0)])
+        print(aux_mat[1])
+        print(aux_mat[-1])
+
+        #Tenor 12mon
+        print('12-mon')
+        aux_mat = np.transpose(self.paths[str(4)])
+        print(aux_mat[1])
+        print(aux_mat[-1])
+        '''
     
     def run(self):
         self.get_fit_pars()

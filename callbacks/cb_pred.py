@@ -17,7 +17,7 @@ from forward_term import Forward_Term
                Input('tab-pred-incr-radio', 'value'),
                Input('pred-year-slider', 'value'),
                Input('tab-pred-model-dropdown', 'value'),
-               Input('tab-pred-distr-dropdown', 'value')],)
+               Input('tab-pred-distr-radio', 'value')],)
 def tab_calculate_term(curr, transf, incr, date_range, model, distr):
 
     application = utils.transf2application[transf]
@@ -70,6 +70,21 @@ def tab_pred_graph(mean_std_json, ndays):
             yaxis={'title': 'IR',},
             hovermode='closest',
         )}
+
+#Update the distribution dropdown based on the transformation used.
+#E.g. the 'Best fit' distribution can only be used with transformations that
+#make the data stationary (viz. Diff. and Log ratio). 
+@app.callback(
+    Output('tab-pred-distr-radio', 'options'),
+    [Input('tab-pred-transf-dropdown', 'value')])
+def set_distr_options(transf):
+    return [{'label': i, 'value': i} for i in utils.transf2distr_options[transf]]
+
+@app.callback(
+    Output('tab-pred-distr-radio', 'value'),
+    [Input('tab-pred-distr-radio', 'options')])
+def set_distr_value(distr_options):
+    return distr_options[0]['value']
     
 @app.callback(Output('tab-pred-ndays-slider', 'children'),
               [Input('tab-pred-curr-dropdown', 'value'),

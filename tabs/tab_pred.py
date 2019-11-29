@@ -20,8 +20,8 @@ tab_pred_layout = html.Div([
         dcc.Dropdown(
             id='tab-pred-transf-dropdown',
             options=[{'label': i, 'value': i} for i in ['Diff.', 'Log ratio', 'Raw']],
-            value='Raw',
-            #value='Diff.',
+            #value='Raw',
+            value='Diff.',
             style={'width': '150px', 'marginLeft': '.5em'},
         ),        
 
@@ -44,8 +44,8 @@ tab_pred_layout = html.Div([
         ),       
        
         html.H6('Distribution:', style={'marginLeft': '3em'}),
-        dcc.Dropdown(
-            id='tab-pred-distr-dropdown',
+        dcc.RadioItems(
+            id='tab-pred-distr-radio',
             options=[{'label': i, 'value': i} for i in ['Best fit', 'Normal']],
             value='Best fit',
             style={'width': '150px', 'marginLeft': '.5em'},

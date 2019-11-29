@@ -53,10 +53,8 @@ tab_sim_layout = html.Div([
         ),       
        
         html.H6('Distribution:', style={'marginLeft': '3em'}),
-        dcc.Dropdown(
-            id='tab-sim-distr-dropdown',
-            options=[{'label': i, 'value': i} for i in ['Best fit', 'Normal']],
-            value='Best fit',
+        dcc.RadioItems(
+            id='tab-sim-distr-radio',
             style={'width': '150px', 'marginLeft': '.5em'},
         ),
 

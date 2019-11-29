@@ -16,6 +16,13 @@ transf2application = {'Raw':'simple_diff', 'Diff.':'simple_diff',
 transf2IR = {'Raw':'ir', 'Diff.':'ir_transf', 'Log ratio':'ir_transf'}
 currtag2curr = {'USD':['USD'], 'CAD':['CAD'], 'USD & CAD':['USD', 'CAD']}
 incrtag2incr = {'1':[1], '25':[25], '1 & 25':[1, 25]}
+#E.g. the 'Best fit' distribution can only be used with transformations that
+#make the data stationary (viz. Diff. and Log ratio). 
+transf2distr_options = {
+    'Raw': [u'Normal'],
+    'Diff.': [u'Best fit', 'Normal'],
+    'Log ratio': [u'Best fit', 'Normal']
+}
 
 pars2guess = {
   'Raw_Vasicek': 'theta1=0.1, theta2=0.1, theta3=0.05',
