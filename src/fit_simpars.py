@@ -10,15 +10,6 @@ base = rpackages.importr('base')
 rpackages.importr("Sim.DiffProc")
 utils.chooseCRANmirror(ind=1)
 
-#References
-#https://rpy2.readthedocs.io/en/version_2.8.x/introduction.html
-#http://rpy.sourceforge.net/rpy2/doc-2.1/html/introduction.html
-#https://cran.r-project.org/web/packages/Sim.DiffProc/vignettes/fitsde.html
-
-#Requirement:
-#rpy2 (see https://anaconda.org/r/rpy2)
-#conda install -c r rpy2
-
 class Fit_Simpars(object):
     """
     Description:
