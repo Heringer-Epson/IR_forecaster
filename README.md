@@ -38,16 +38,15 @@ The rates used here are from the London Interbank Offered Rate (LIBOR).
 
 Source: The Federal Bank of Saint-Louis [FRED](https://fred.stlouisfed.org/).
 
-### Requirements
+### Installation
 
 It is recommended that this package is run on a Conda environment. In particular,
 it has been developed using python 3.7
 
-+ conda create -n py37 -c anaconda python=3.7
-+ conda install -c conda-forge dash
-+ conda install -c r rpy2
-+ conda install -c anaconda seaborn
-+ install.packages('Sim.DiffProc', repos = "http://cran.us.r-project.org")
++ conda env create -f env.yml
++ source activate IR
++ Rscript install_R_dependencies.R
++ python3 main.py
 
 ### Relevant Sources
 
