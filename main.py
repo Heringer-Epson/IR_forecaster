@@ -5,6 +5,7 @@ import dash_core_components as dcc
 from server import app
 
 from tabs import tab_about
+'''
 from tabs import tab_IR
 from tabs import tab_IRt
 from tabs import tab_hist
@@ -24,12 +25,13 @@ from callbacks import cb_corr
 from callbacks import cb_pca
 from callbacks import cb_sim
 from callbacks import cb_pred
-
+'''
 app.title = 'IR Forecaster'
 app.layout = html.Div([
     #html.H1('Analysis of Intrabank Rates'),
     dcc.Tabs(id='tabs-main', value='tab-about', children=[
         dcc.Tab(label='About', value='tab-about'),
+        '''
         dcc.Tab(label='Rates', value='tab-IR'),
         dcc.Tab(label='Transf. Rates', value='tab-IR_t'),
         dcc.Tab(label='Histogram', value='tab-hist'),
@@ -39,6 +41,7 @@ app.layout = html.Div([
         dcc.Tab(label='PCA', value='tab-pca'),
         dcc.Tab(label='Simulate Rates', value='tab-sim'),
         dcc.Tab(label='Term Prediction', value='tab-pred'),
+        '''
     ]),
     html.Div(id='tabs-main-content')
 ])
@@ -68,4 +71,5 @@ def render_content(tab):
         return tab_pred.tab_pred_layout
                                 
 if __name__ == '__main__':
-    app.run_server(host='127.0.0.1', port=8080, debug=True)
+    #app.run_server(host='127.0.0.1', port=8080, debug=True)
+    app.run_server(host='0.0.0.0', port=8080, debug=True)
