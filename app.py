@@ -68,4 +68,4 @@ def render_content(tab):
         return tab_pred.tab_pred_layout
                                 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(host='127.0.0.1', port=8080, debug=True)
