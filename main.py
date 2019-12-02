@@ -4,6 +4,8 @@ import dash_html_components as html
 import dash_core_components as dcc
 from server import app
 
+#deploy#
+
 from tabs import tab_about
 from tabs import tab_IR
 from tabs import tab_IRt
