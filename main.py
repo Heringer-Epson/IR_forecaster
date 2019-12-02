@@ -14,6 +14,7 @@ import src.utils as utils
 from src.preprocess_data import Preproc_Data
 from src.fit_distributions import Fit_Distr
 from src.compute_structure import Compute_Structure
+from src.explained_var import Explained_Var
 
 from tabs import tab_about
 from tabs import tab_IR
@@ -28,16 +29,15 @@ from tabs import tab_pred
 
 dash_app.title = 'IR Forecaster'
 dash_app.layout = html.Div([
-    #html.H1('Analysis of Intrabank Rates'),
     dcc.Tabs(id='tabs-main', value='tab-about', children=[
         dcc.Tab(label='About', value='tab-about'),
         dcc.Tab(label='Rates', value='tab-IR'),
         dcc.Tab(label='Transf. Rates', value='tab-IR_t'),
         dcc.Tab(label='Histogram', value='tab-hist'),
         dcc.Tab(label='Term Structure', value='tab-term'),
-        #dcc.Tab(label='Standard Dev.', value='tab-std'),
-        #dcc.Tab(label='Correlation Matrix', value='tab-corr'),
-        #dcc.Tab(label='PCA', value='tab-pca'),
+        dcc.Tab(label='Standard Dev.', value='tab-std'),
+        dcc.Tab(label='Correlation Matrix', value='tab-corr'),
+        dcc.Tab(label='PCA', value='tab-pca'),
         #dcc.Tab(label='Simulate Rates', value='tab-sim'),
         #dcc.Tab(label='Term Prediction', value='tab-pred'),
     ]),
@@ -57,13 +57,13 @@ def render_content(tab):
         return tab_hist.tab_hist_layout
     elif tab == 'tab-term':
         return tab_term.tab_term_layout
-    '''
     elif tab == 'tab-std':
         return tab_std.tab_std_layout
     elif tab == 'tab-corr':
         return tab_corr.tab_corr_layout
     elif tab == 'tab-pca':
         return tab_pca.tab_pca_layout
+    '''
     elif tab == 'tab-sim':
         return tab_sim.tab_sim_layout
     elif tab == 'tab-pred':
@@ -350,6 +350,190 @@ def tab_term_slider(curr, incr):
 @dash_app.callback(Output('tab-term-slider-container', 'children'),
               [Input('term-year-slider', 'value')])
 def tab_term_slider_container(date_range):
+    t_min, t_max = utils.format_date(date_range)
+    return 'Date range is "{}" -- "{}"'.format(t_min, t_max)
+
+#=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=TAB: term-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+@dash_app.callback(Output('tab-std-graph', 'figure'),
+              [Input('tab-std-curr-dropdown', 'value'),
+               Input('tab-std-transf-dropdown', 'value'),
+               Input('std-year-slider', 'value')])
+def tab_hist_graph(curr, transf, date_range):
+    
+    application = utils.transf2application[transf]
+    IR_key = utils.transf2IR[transf]
+    t_min, t_max = utils.format_date(date_range)
+
+    M = Preproc_Data(
+      curr=curr, t_ival=[t_min, t_max], application=application).run()
+    tenors = M['tenor'] #Using the default tenors. i.e. [1,2,3,6,12]
+    
+    std_ratio = [M['{}m_25d'.format(str(t))][IR_key].std()\
+                 /M['{}m_1d'.format(str(t))][IR_key].std()
+                 for t in tenors]
+    
+    traces = []
+    traces.append(go.Scattergl(
+        x=tenors,
+        y=std_ratio,
+        mode='lines+markers',
+        opacity=1.,
+        line=dict(color='black', width=4.),
+        marker=dict(color='black', size=10),
+        showlegend=False
+    ))
+
+    return {
+        'data': traces,
+        'layout': dict(
+            xaxis={'title': 'Maturity [months]',},
+            yaxis={'title': r'std(T=25d) / std(T=1d)',},
+            hovermode='closest',
+        )
+    }
+
+@dash_app.callback(Output('tab-std-slider', 'children'),
+              [Input('tab-std-curr-dropdown', 'value')])
+def tab_term_slider(curr):
+    t_min, t_max, t_list = utils.compute_t_range(currtag=curr)
+    return html.Div(
+        dcc.RangeSlider(
+            id='std-year-slider',
+            min=t_min,
+            max=t_max,
+            value=[2010, 2015],
+            marks={year: str(year) for year in t_list},
+            step=1./12.
+        )
+    )  
+
+@dash_app.callback(Output('tab-std-slider-container', 'children'),
+              [Input('std-year-slider', 'value')])
+def tab_term_slider_container(date_range):
+    t_min, t_max = utils.format_date(date_range)
+    return 'Date range is "{}" -- "{}"'.format(t_min, t_max)
+
+#=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=TAB: corr-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+@dash_app.callback(Output('tab-corr-graph', 'figure'),
+              [Input('tab-corr-curr-dropdown', 'value'),
+               Input('tab-corr-transf-dropdown', 'value'),
+               Input('tab-corr-incr-radio', 'value'),
+               Input('corr-year-slider', 'value')])
+def tab_corr_graph(currtag, transf, incrtag, date_range):   
+
+    application = utils.transf2application[transf]
+    t_min, t_max = utils.format_date(date_range)
+
+    tenor_list = [1,2,3,6,12]
+    IR_key = utils.transf2IR[transf]   
+    curr_list = utils.currtag2curr[currtag]
+    incr_list = utils.incrtag2incr[incrtag]
+    M_list = [
+      Preproc_Data(curr=curr, incr=incr_list, tenor=tenor_list, application=application,
+        t_ival=[t_min, t_max]).run() for curr in curr_list]
+
+    merged_df = utils.merge_dataframes(M_list, curr_list, tenor_list, incr_list, IR_key)
+    columns = merged_df.columns
+
+    traces = []
+    traces.append(go.Heatmap(
+        z=merged_df.corr(),
+        x=merged_df.columns,
+        y=merged_df.columns,
+        colorscale='balance', #'curl', 'delta'
+        zmid=0,
+    ))
+
+    return {
+        'data': traces,
+        'layout': dict(
+            hovermode='closest',
+            margin = dict(r=200,l=200,t=50,b=100),
+            width = 1000, height = 600,
+        )
+    }
+
+@dash_app.callback(Output('tab-corr-slider', 'children'),
+              [Input('tab-corr-curr-dropdown', 'value'),
+               Input('tab-corr-incr-radio', 'value')])
+def tab_corr_slider(currtag, incrtag):
+    t_min, t_max, t_list = utils.compute_t_range(currtag, incrtag)
+    return html.Div(
+        dcc.RangeSlider(
+            id='corr-year-slider',
+            min=t_min,
+            max=t_max,
+            value=[2010, 2015],
+            marks={year: str(year) for year in t_list},
+            step=1./12.
+        )
+    )  
+
+@dash_app.callback(Output('tab-corr-slider-container', 'children'),
+              [Input('corr-year-slider', 'value')])
+def tab_IR_t_slider_container(date_range):
+    t_min, t_max = utils.format_date(date_range)
+    return 'Date range is "{}" -- "{}"'.format(t_min, t_max)
+
+#=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=TAB: corr-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+@dash_app.callback(Output('tab-pca-graph', 'figure'),
+              [Input('tab-pca-curr-dropdown', 'value'),
+               Input('tab-pca-transf-dropdown', 'value'),
+               Input('tab-pca-incr-radio', 'value'),
+               Input('pca-year-slider', 'value')])
+def tab_pca_graph(curr, transf, incr, date_range):   
+
+    application = utils.transf2application[transf]
+    IR_key = utils.transf2IR[transf]
+    t_min, t_max = utils.format_date(date_range)
+
+    M = Preproc_Data(curr=curr, incr=[int(incr)], t_ival=[t_min, t_max],
+                     application=application).run()
+    
+    merged_df = utils.merge_dataframes([M], [curr], M['tenor'], [incr], IR_key)    
+    n_pca_array, exp_var = Explained_Var(merged_df.values).run()
+    
+    traces = []
+    traces.append(go.Scattergl(
+        x=n_pca_array,
+        y=exp_var,
+        mode='lines+markers',
+        opacity=1.,
+        line=dict(color='black', width=3.),
+        marker=dict(color='black', size=10),
+    ))
+
+    return {
+        'data': traces,
+        'layout': dict(
+            xaxis={'title': 'Number of Principal Components',},
+            yaxis={'title': 'Explained Variance [%]',},
+            hovermode='closest',
+        )
+    }
+
+@dash_app.callback(Output('tab-pca-slider', 'children'),
+              [Input('tab-pca-curr-dropdown', 'value'),
+               Input('tab-pca-incr-radio', 'value')])
+def tab_corr_slider(currtag, incrtag):
+    t_min, t_max, t_list = utils.compute_t_range(currtag, incrtag)
+    return html.Div(
+        dcc.RangeSlider(
+            id='pca-year-slider',
+            min=t_min,
+            max=t_max,
+            value=[2010, 2015],
+            marks={year: str(year) for year in t_list},
+            step=1./12.
+        )
+    )  
+
+@dash_app.callback(Output('tab-pca-slider-container', 'children'),
+              [Input('pca-year-slider', 'value')])
+def tab_IR_t_slider_container(date_range):
     t_min, t_max = utils.format_date(date_range)
     return 'Date range is "{}" -- "{}"'.format(t_min, t_max)
 
