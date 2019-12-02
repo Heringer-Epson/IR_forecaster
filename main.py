@@ -1,9 +1,11 @@
 import dash
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 import plotly.graph_objs as go
 import dash_html_components as html
 import dash_core_components as dcc
 import dash_table
+import numpy as np
+import json
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 dash_app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
@@ -11,10 +13,12 @@ dash_app.config.suppress_callback_exceptions = True
 app = dash_app.server
 
 import src.utils as utils
+from src.pars import Inp_Pars
 from src.preprocess_data import Preproc_Data
 from src.fit_distributions import Fit_Distr
 from src.compute_structure import Compute_Structure
 from src.explained_var import Explained_Var
+from src.forward_term import Forward_Term
 
 from tabs import tab_about
 from tabs import tab_IR
@@ -38,8 +42,8 @@ dash_app.layout = html.Div([
         dcc.Tab(label='Standard Dev.', value='tab-std'),
         dcc.Tab(label='Correlation Matrix', value='tab-corr'),
         dcc.Tab(label='PCA', value='tab-pca'),
-        #dcc.Tab(label='Simulate Rates', value='tab-sim'),
-        #dcc.Tab(label='Term Prediction', value='tab-pred'),
+        dcc.Tab(label='Simulate Rates', value='tab-sim'),
+        dcc.Tab(label='Term Prediction', value='tab-pred'),
     ]),
     html.Div(id='tabs-main-content')
 ])
@@ -63,12 +67,11 @@ def render_content(tab):
         return tab_corr.tab_corr_layout
     elif tab == 'tab-pca':
         return tab_pca.tab_pca_layout
-    '''
     elif tab == 'tab-sim':
         return tab_sim.tab_sim_layout
     elif tab == 'tab-pred':
         return tab_pred.tab_pred_layout
-    '''
+
 #=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-TAB: IR-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 @dash_app.callback(Output('tab-IR-graph', 'figure'),
@@ -536,6 +539,214 @@ def tab_corr_slider(currtag, incrtag):
 def tab_IR_t_slider_container(date_range):
     t_min, t_max = utils.format_date(date_range)
     return 'Date range is "{}" -- "{}"'.format(t_min, t_max)
+
+#=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-TAB: Sim-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+@dash_app.callback(Output('tab-sim-graph', 'figure'),
+              [Input('tab-sim-curr-dropdown', 'value'),
+               Input('tab-sim-tenor-dropdown', 'value'),
+               Input('tab-sim-transf-dropdown', 'value'),
+               Input('tab-sim-incr-radio', 'value'),
+               Input('sim-year-slider', 'value'),
+               Input('tab-sim-model-dropdown', 'value'),
+               Input('tab-sim-distr-radio', 'value'),
+               Input('tab-sim-ndays-dropdown', 'value'),
+               Input('tab-sim-npaths-dropdown', 'value'),
+               Input('tab-sim-button', 'n_clicks')],)
+def tab_sim_graph(curr, tenor, transf, incr, date_range, model, distr, ndays,
+                  npaths, n_clicks):
+
+    application = utils.transf2application[transf]
+    IR_key = utils.transf2IR[transf]
+
+    t_min, t_max = utils.format_date(date_range)
+    M = Preproc_Data(curr=curr, incr=[int(incr)], tenor=[tenor],
+                     t_ival=[t_min, t_max], application=application).run()
+
+    current_IR = utils.get_current_ir(M, [tenor], incr)
+    merged_df = utils.merge_dataframes([M], [curr], [tenor], [incr], IR_key)
+
+    matrix = np.transpose(merged_df.values)
+    guess = utils.pars2guess[transf + '_' + model]
+    rng_expr = utils.retrieve_rng_generators(matrix, distr)
+
+    paths, mean, std = Forward_Term(
+      matrix, model, transf, rng_expr, current_IR, guess, ndays, npaths).run()
+
+    traces = []
+    time_array = np.arange(0,ndays + 1.e-5,1)
+    current_date = str(merged_df.index[0])[0:10]
+    for path in paths[str(int(tenor) - 1)]:
+        traces.append(go.Scattergl(
+            x=time_array,
+            y=path,
+            mode='lines',
+            opacity=.7,
+            line=dict(width=1.),
+            showlegend=False
+        ))
+    return {
+        'data': traces,
+        'layout': dict(
+            xaxis={'title': current_date + '  +  t [days]',},
+            yaxis={'title': 'IR',},
+            hovermode='closest',
+        )}
+
+#Update the distribution dropdown based on the transformation used.
+@dash_app.callback(
+    Output('tab-sim-distr-radio', 'options'),
+    [Input('tab-sim-transf-dropdown', 'value')])
+def set_distr_options(transf):
+    return [{'label': i, 'value': i} for i in utils.transf2distr_options[transf]]
+
+@dash_app.callback(
+    Output('tab-sim-distr-radio', 'value'),
+    [Input('tab-sim-distr-radio', 'options')])
+def set_distr_value(distr_options):
+    return distr_options[0]['value']
+
+@dash_app.callback(Output('tab-sim-slider', 'children'),
+              [Input('tab-sim-curr-dropdown', 'value'),
+               Input('tab-sim-incr-radio', 'value'),
+               Input('tab-sim-tenor-dropdown', 'value')])
+def tab_IR_t_slider(curr, incr, tenor):
+    t_min, t_max, t_list = utils.compute_t_range(
+      currtag=curr, incrtag=incr, tenor=[int(tenor)])
+    return html.Div(
+        dcc.RangeSlider(
+            id='sim-year-slider',
+            min=t_min,
+            max=t_max,
+            value=[2010, 2015],
+            marks={year: str(year) for year in t_list},
+            step=1./12.
+        )
+    )  
+
+@dash_app.callback(Output('tab-sim-slider-container', 'children'),
+              [Input('sim-year-slider', 'value')])
+def tab_IR_t_slider_container(date_range):
+    t_min, t_max = utils.format_date(date_range)
+    return 'Date range is "{}" -- "{}"'.format(t_min, t_max)
+    
+#=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-TAB: Prediction-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+@dash_app.callback(Output('tab-pred-intermediate-matrix', 'children'),
+              [Input('tab-pred-curr-dropdown', 'value'),
+               Input('tab-pred-transf-dropdown', 'value'),
+               Input('tab-pred-incr-radio', 'value'),
+               Input('pred-year-slider', 'value'),
+               Input('tab-pred-model-dropdown', 'value'),
+               Input('tab-pred-distr-radio', 'value')],)
+def tab_calculate_term(curr, transf, incr, date_range, model, distr):
+
+    application = utils.transf2application[transf]
+    IR_key = utils.transf2IR[transf]
+
+    t_min, t_max = utils.format_date(date_range)
+    M = Preproc_Data(curr=curr, incr=[int(incr)], t_ival=[t_min, t_max],
+                     application=application).run()
+
+    tenors = M['tenor'] #Using the default tenors. i.e. [1,2,3,6,12]
+    current_IR = utils.get_current_ir(M, tenors, incr)
+
+    merged_df = utils.merge_dataframes([M], [curr], tenors, [incr], IR_key)
+    current_date = str(merged_df.index[0])[0:10]
+    matrix = np.transpose(merged_df.values)
+    guess = utils.pars2guess[transf + '_' + model]
+    rng_expr = utils.retrieve_rng_generators(matrix, distr)
+
+    paths, mean, std = Forward_Term(
+      matrix, model, transf, rng_expr, current_IR, guess, Inp_Pars.T_sim).run()
+    out_json = [mean, std, tenors, current_date]
+    return json.dumps(out_json)
+
+@dash_app.callback(Output('tab-pred-graph', 'figure'),
+              [Input('tab-pred-intermediate-matrix', 'children'),
+               Input('pred-ndays-slider', 'value')],)
+def tab_pred_graph(mean_std_json, ndays):
+
+    mean, std, tenors, current_date = json.loads(mean_std_json)
+    
+    traces = []
+    traces.append(go.Scattergl(
+        x=tenors,
+        y=mean[ndays - 1],
+            error_y=dict(
+                type='data',
+                array=std[ndays - 1],
+                visible=True
+            ),
+        mode='lines',
+        opacity=1.,
+        line=dict(color='black', width=3.),
+        marker=dict(color='black', size=10),
+        showlegend=False))
+    
+    return {
+        'data': traces,
+        'layout': dict(
+            xaxis={'title': current_date + '  +  t [days]',},
+            yaxis={'title': 'IR',},
+            hovermode='closest',
+        )}
+
+#Update the distribution dropdown based on the transformation used.
+#E.g. the 'Best fit' distribution can only be used with transformations that
+#make the data stationary (viz. Diff. and Log ratio). 
+@dash_app.callback(
+    Output('tab-pred-distr-radio', 'options'),
+    [Input('tab-pred-transf-dropdown', 'value')])
+def set_distr_options(transf):
+    return [{'label': i, 'value': i} for i in utils.transf2distr_options[transf]]
+
+@dash_app.callback(
+    Output('tab-pred-distr-radio', 'value'),
+    [Input('tab-pred-distr-radio', 'options')])
+def set_distr_value(distr_options):
+    return distr_options[0]['value']
+    
+@dash_app.callback(Output('tab-pred-ndays-slider', 'children'),
+              [Input('tab-pred-curr-dropdown', 'value'),
+               Input('tab-pred-incr-radio', 'value')])
+def tab_IR_t_slider(curr, incr):
+    t_min, t_max, t_list = utils.compute_t_range(currtag=curr, incrtag=incr)
+
+    return html.Div(
+        dcc.Slider(
+            id='pred-ndays-slider',
+            min=1,
+            max=Inp_Pars.T_sim,
+            value=1,
+            marks={time: str(time) for time in np.arange(5,Inp_Pars.T_sim + 1,25).tolist()},
+            step=1,
+        )
+    )  
+
+@dash_app.callback(Output('tab-pred-slider', 'children'),
+              [Input('tab-pred-curr-dropdown', 'value'),
+               Input('tab-pred-incr-radio', 'value')])
+def tab_IR_t_slider(curr, incr):
+    t_min, t_max, t_list = utils.compute_t_range(currtag=curr, incrtag=incr)
+
+    return html.Div(
+        dcc.RangeSlider(
+            id='pred-year-slider',
+            min=t_min,
+            max=t_max,
+            value=[2010, 2015],
+            marks={year: str(year) for year in t_list},
+            step=1./12.
+        )
+    )  
+
+@dash_app.callback(Output('tab-pred-slider-container', 'children'),
+              [Input('pred-year-slider', 'value')])
+def tab_IR_t_slider_container(date_range):
+    t_min, t_max = utils.format_date(date_range)
+    return 'Date range is "{}" -- "{}"'.format(t_min, t_max)
+
 
 #=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-END: TABs-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-
                                 
