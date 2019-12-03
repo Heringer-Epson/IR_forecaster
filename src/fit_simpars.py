@@ -8,7 +8,7 @@ from rpy2.robjects.vectors import StrVector
 rstats = rpackages.importr('stats')
 utils = rpackages.importr('utils')
 
-R_cloud_path = '/usr/local/lib/R/site-library'
+R_cloud_path = '/usr/R_packages'
 if os.path.isdir(R_cloud_path):
     rpackages.importr('Sim.DiffProc', lib_loc=R_cloud_path )
 else:

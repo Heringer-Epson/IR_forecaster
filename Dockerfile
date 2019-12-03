@@ -25,7 +25,8 @@ RUN apt-get install -qy python3
 RUN apt-get install -qy python3-pip
 
 #Copy files to an "app/" directory.
-ADD . /app
+#ADD . /app
+#COPY . /app
 
 #Switch directory to the newly created app/
 WORKDIR /app
@@ -39,8 +40,7 @@ EXPOSE 8050
 EXPOSE 8080
 
 #Execute install_SimDiff.R script to install Sim.DiffProc package.
-#RUN Rscript -e "install.packages('Sim.DiffProc', lib='/usr/local/lib/R/site-library', repos='http://cran.us.r-project.org')"
-RUN Rscript -e "install.packages('Sim.DiffProc', repos='http://cran.us.r-project.org')"
+RUN Rscript -e "install.packages('Sim.DiffProc', lib='/usr/R_packages', repos='http://cran.us.r-project.org')"
 #CMD ["python3", "install_R_dependencies.py"]
 
 #Execute the main.py script.
