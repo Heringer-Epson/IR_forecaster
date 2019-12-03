@@ -40,6 +40,7 @@ EXPOSE 8080
 
 #Execute install_SimDiff.R script to install Sim.DiffProc package.
 RUN Rscript -e "install.packages('Sim.DiffProc', repos='http://cran.us.r-project.org')"
+#CMD ["python3", "install_R_dependencies.py"]
 
 #Execute the main.py script.
 CMD ["python3", "main.py"]
