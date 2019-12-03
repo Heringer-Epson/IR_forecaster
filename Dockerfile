@@ -1,3 +1,9 @@
+#References:
+#https://www.wintellect.com/containerize-python-app-5-minutes/
+#https://blog.realkinetic.com/building-minimal-docker-containers-for-python-applications-37d0272c52f3
+#https://www.youtube.com/watch?v=WAPXaDpkytw
+#https://cloud.google.com/appengine/docs/flexible/custom-runtimes/build#docker
+
 #Specify OS.
 FROM ubuntu:latest
 
