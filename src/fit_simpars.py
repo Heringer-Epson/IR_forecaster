@@ -7,8 +7,6 @@ from rpy2.robjects.vectors import StrVector
 
 rstats = rpackages.importr('stats')
 utils = rpackages.importr('utils')
-base = rpackages.importr('base')
-#rpackages.importr("Sim.DiffProc", lib_loc=str(os.path.join(os.getcwd(), 'R_packages')))
 rpackages.importr("Sim.DiffProc")
 
 utils.chooseCRANmirror(ind=1)
