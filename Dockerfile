@@ -12,7 +12,7 @@ RUN apt-get update -y
 
 #Set timezone env variable, so that r-base installation does not ask the user
 #to specify a timezone when deploying the app.
-ENV TZ=Europe/Minsk
+ENV TZ=America/New_York
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 #Install r-base so that Rscripts can be run.
@@ -39,7 +39,8 @@ EXPOSE 8050
 EXPOSE 8080
 
 #Execute install_SimDiff.R script to install Sim.DiffProc package.
-CMD ["Rscript", "install_R_dependencies.R"]
+#CMD ["Rscript", "install_R_dependencies.R"]
+RUN Rscript -e "install.packages('Sim.DiffProc', repos='http://cran.us.r-project.org')"
 
 #Execute the main.py script.
 CMD ["python3", "main.py"]

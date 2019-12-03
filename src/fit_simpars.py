@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import os
 import rpy2.robjects as robjects
 import rpy2.robjects.packages as rpackages
 from rpy2.robjects.vectors import StrVector
@@ -7,7 +8,9 @@ from rpy2.robjects.vectors import StrVector
 rstats = rpackages.importr('stats')
 utils = rpackages.importr('utils')
 base = rpackages.importr('base')
-rpackages.importr("Sim.DiffProc", lib_loc="./src/R_packages/")
+#rpackages.importr("Sim.DiffProc", lib_loc=str(os.path.join(os.getcwd(), 'R_packages')))
+rpackages.importr("Sim.DiffProc")
+
 utils.chooseCRANmirror(ind=1)
 
 class Fit_Simpars(object):
