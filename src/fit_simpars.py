@@ -7,9 +7,8 @@ from rpy2.robjects.vectors import StrVector
 
 rstats = rpackages.importr('stats')
 utils = rpackages.importr('utils')
-rpackages.importr("Sim.DiffProc")
-
-utils.chooseCRANmirror(ind=1)
+utils.install_packages('Sim.DiffProc', repos="http://cran.us.r-project.org")
+rpackages.importr('Sim.DiffProc')
 
 class Fit_Simpars(object):
     """
