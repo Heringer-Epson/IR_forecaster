@@ -7,8 +7,12 @@ from rpy2.robjects.vectors import StrVector
 
 rstats = rpackages.importr('stats')
 utils = rpackages.importr('utils')
-utils.install_packages('Sim.DiffProc', repos="http://cran.us.r-project.org")
-rpackages.importr('Sim.DiffProc')
+
+R_cloud_path = '/usr/local/lib/R/site-library'
+if os.path.isdir(R_cloud_path):
+    rpackages.importr('Sim.DiffProc', lib_loc=R_cloud_path )
+else:
+    rpackages.importr('Sim.DiffProc')
 
 class Fit_Simpars(object):
     """
