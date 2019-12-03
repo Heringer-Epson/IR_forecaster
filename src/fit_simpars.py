@@ -7,7 +7,7 @@ from rpy2.robjects.vectors import StrVector
 rstats = rpackages.importr('stats')
 utils = rpackages.importr('utils')
 base = rpackages.importr('base')
-rpackages.importr("Sim.DiffProc")
+rpackages.importr("Sim.DiffProc", lib_loc="./src/R_packages/")
 utils.chooseCRANmirror(ind=1)
 
 class Fit_Simpars(object):
@@ -43,11 +43,6 @@ class Fit_Simpars(object):
         
         self.fitter = None
         self.fit = None
-
-    def install_R_packages(self):
-        pkg = 'Sim.DiffProc'
-        if not rpackages.isinstalled(pkg):
-            utils.install_packages(StrVector(pkg))
 
     def define_model(self):
         #E.g. https://cran.r-project.org/web/packages/Sim.DiffProc/vignettes/fitsde.html
@@ -110,7 +105,6 @@ class Fit_Simpars(object):
         self.fit = [sol[i] for i in range(len(sol))]
 
     def run(self):
-        self.install_R_packages() #move this to an installation file.
         self.define_model()
         self.perform_fit()
         return self.fit
