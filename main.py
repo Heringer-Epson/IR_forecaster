@@ -747,9 +747,8 @@ def tab_IR_t_slider_container(date_range):
     t_min, t_max = utils.format_date(date_range)
     return 'Date range is "{}" -- "{}"'.format(t_min, t_max)
 
-
 #=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-END: TABs-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-
                                 
 if __name__ == '__main__':
-    #dash_app.run_server(host='127.0.0.1', port=8080, debug=True)
-    dash_app.run_server(debug=True)
+    dash_app.run_server(host='0.0.0.0', port=8080, debug=True)
+    #dash_app.run_server(debug=True)
