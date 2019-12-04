@@ -7,6 +7,10 @@
 #Specify OS.
 FROM ubuntu:latest
 
+#Make a directory for R-Packages
+RUN mkdir /home/R_packages
+RUN chmod a+rwx -R /home/R_packages
+
 #Make sure apt-get is up-to-date.
 RUN apt-get update -y
 
@@ -26,11 +30,10 @@ RUN apt-get install -qy python3-pip
 
 #Copy files to an "app/" directory.
 #ADD . /app
-#COPY . /app
+COPY . /app
 
 #Switch directory to the newly created app/
-#WORKDIR /app
-WORKDIR /home/app
+WORKDIR /app
 
 #Install requirements.
 RUN pip3 install -r requirements.txt

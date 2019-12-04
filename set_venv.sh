@@ -1,10 +1,14 @@
 #!/bin/bash
-python3 -m venv .venvs/testing
-source .venvs/testing/bin/activate
+mkdir /home/R_packages
+chmod a+rwx -R /home/R_packages
+
+python3 -m venv .venvs/ir_env
+source .venvs/ir_env/bin/activate
+
 apt-get update -y
 apt-get install -qy python3-pip
 apt-get install -qy  r-base
-cd $workdir
+cd IR_forecaster
 pip3 install -r requirements.txt
-Rscript install_R_dependencies.R
+Rscript -e 'install.packages("Sim.DiffProc", lib="/home/R_packages", repos="http://cran.us.r-project.org")'
 python3 main.py
