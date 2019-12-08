@@ -19,6 +19,7 @@ from src.fit_distributions import Fit_Distr
 from src.compute_structure import Compute_Structure
 from src.explained_var import Explained_Var
 from src.forward_term import Forward_Term
+from src.compute_PCA import Compute_Pca
 
 from tabs import tab_about
 from tabs import tab_IR
@@ -76,19 +77,28 @@ def render_content(tab):
 
 @dash_app.callback(Output('tab-IR-graph', 'figure'),
               [Input('tab-IR-curr-dropdown', 'value'),
-               Input('tab-IR-tenor-dropdown', 'value'),
-               Input('IR-year-slider', 'value')])
-def tab_IR_graph(curr, tenor, date_range):
+               Input('tab-IR-axis-dropdown', 'value'),
+               Input('IR-year-slider', 'value'),
+               Input('tab-IR-pca', 'n_clicks')])
+def tab_IR_graph(curr, axis, date_range, n_clicks):
 
     t_min, t_max = utils.format_date(date_range)
     M = Preproc_Data(curr=curr, t_ival=[t_min, t_max]).run()
-    df = M['{}m_1d'.format(str(tenor))]
+    #df = M['{}m_1d'.format(str(tenor))]
     
+    merged_df = utils.merge_dataframes([M], [curr], Inp_Pars.tenor, ['1'], 'ir')
+    if n_clicks % 2 == 1:
+        pca = Compute_Pca(merged_df.values)#.run()
+        transformed_matrix = np.transpose(pca.components)
+        y = transformed_matrix[axis]
+    else:
+        y = np.transpose(merged_df.values)[axis]
+        
     traces = []
     traces.append(go.Scattergl(
-        x=df['date'],
-        y=df['ir'],
-        text=df['ir_transf'],
+        #x=df['date'],
+        x=merged_df.index,
+        y=y,
         mode='lines',
         opacity=.5,
         line=dict(color='black', width=3.),
@@ -105,11 +115,10 @@ def tab_IR_graph(curr, tenor, date_range):
     }
 
 @dash_app.callback(Output('tab-IR-slider', 'children'),
-              [Input('tab-IR-curr-dropdown', 'value'),
-               Input('tab-IR-tenor-dropdown', 'value')])
-def tab_IR_slider(curr, tenor):
+              [Input('tab-IR-curr-dropdown', 'value'),])
+def tab_IR_slider(curr):
     t_min, t_max, t_list = utils.compute_t_range(
-      currtag=curr, tenor=[int(tenor)])
+      currtag=curr, tenor=[1])
     return html.Div(
         dcc.RangeSlider(
             id='IR-year-slider',
@@ -127,36 +136,69 @@ def tab_IR_slider_container(date_range):
     t_min, t_max = utils.format_date(date_range)
     return 'Date range is "{}" -- "{}"'.format(t_min, t_max)
 
+@dash_app.callback(
+    Output('tab-IR-pca', 'children'),
+    [Input('tab-IR-pca', 'n_clicks')])
+def set_distr_options(n_clicks):
+    if n_clicks % 2 == 1:
+        return 'Disable PCA'
+    else:
+        return 'Enable PCA'
+
+@dash_app.callback(Output('tab-IR-axis-dropdown', 'options'),
+              [Input('tab-IR-pca', 'n_clicks')])
+def tab_IR_axis_dropdown(n_clicks):
+    if n_clicks % 2 == 1:
+        return [{'label': 'PC: ' + l, 'value': i}
+                for i, l in enumerate(['First', 'Second', 'Third'])]
+    else:
+        return [{'label': 'Tenor: ' + t + ' month', 'value': i}
+                for i, t in enumerate(Inp_Pars.tenor)]
 
 #=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=TAB: IRt-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 @dash_app.callback(Output('tab-IRt-graph', 'figure'),
               [Input('tab-IRt-curr-dropdown', 'value'),
-               Input('tab-IRt-tenor-dropdown', 'value'),
+               Input('tab-IRt-axis-dropdown', 'value'),
                Input('tab-IRt-transf-dropdown', 'value'),
-               Input('IRt-year-slider', 'value')])
-def tab_IRt_graph(curr, tenor, transf, date_range):
+               Input('IRt-year-slider', 'value'),
+               Input('tab-IRt-pca', 'n_clicks')])
+def tab_IRt_graph(curr, axis, transf, date_range, n_clicks):
     application = utils.transf2application[transf]
     t_min, t_max = utils.format_date(date_range)
     M = Preproc_Data(curr=curr, t_ival=[t_min, t_max],
                      application=application).run()
-    df_1 = M['{}m_1d'.format(str(tenor))]
-    df_25 = M['{}m_25d'.format(str(tenor))]
+    
+    merged_df_1 = utils.merge_dataframes(
+      [M], [curr], Inp_Pars.tenor, ['1'], 'ir_transf')
+    merged_df_25 = utils.merge_dataframes(
+      [M], [curr], Inp_Pars.tenor, ['25'], 'ir_transf')
+
+    if n_clicks % 2 == 1:
+        pca_1 = Compute_Pca(merged_df_1.values)#.run()
+        transformed_matrix_1 = np.transpose(pca_1.components)
+        y_1 = transformed_matrix_1[axis]
+
+        pca_25 = Compute_Pca(merged_df_25.values)#.run()
+        transformed_matrix_25 = np.transpose(pca_25.components)
+        y_25 = transformed_matrix_25[axis]    
+    
+    else:
+        y_1 = np.transpose(merged_df_1.values)[axis]    
+        y_25 = np.transpose(merged_df_25.values)[axis]    
         
     traces = []
     traces.append(go.Scattergl(
-        x=df_1['date'],
-        y=df_1['ir_transf'],
-        text=df_1['ir'],
+        x=merged_df_1.index,
+        y=y_1,
         mode='lines',
         opacity=1.,
         line=dict(color='#fdae61', width=3.),
         name='T = 1 day',
     ))
     traces.append(go.Scatter(
-        x=df_25['date'],
-        y=df_25['ir_transf'],
-        text=df_25['ir'],
+        x=merged_df_25.index,
+        y=y_25,
         mode='lines',
         opacity=.8,
         line=dict(color='#3288bd', width=3.),
@@ -170,14 +212,13 @@ def tab_IRt_graph(curr, tenor, transf, date_range):
             yaxis={'title': utils.make_transf_label(transf),},
             hovermode='closest',
         )
-    }
+    }       
+
 
 @dash_app.callback(Output('tab-IRt-slider', 'children'),
-              [Input('tab-IRt-curr-dropdown', 'value'),
-               Input('tab-IRt-tenor-dropdown', 'value')])
-def tab_IRt_slider(curr, tenor):
-    t_min, t_max, t_list = utils.compute_t_range(
-      currtag=curr, tenor=[int(tenor)])
+              [Input('tab-IRt-curr-dropdown', 'value'),])
+def tab_IRt_slider(curr):
+    t_min, t_max, t_list = utils.compute_t_range(currtag=curr, tenor=[1])
     return html.Div(
         dcc.RangeSlider(
             id='IRt-year-slider',
@@ -195,6 +236,25 @@ def tab_IRt_slider_container(date_range):
     t_min, t_max = utils.format_date(date_range)
     return 'Date range is "{}" -- "{}"'.format(t_min, t_max)
 
+@dash_app.callback(
+    Output('tab-IRt-pca', 'children'),
+    [Input('tab-IRt-pca', 'n_clicks')])
+def set_distr_options(n_clicks):
+    if n_clicks % 2 == 1:
+        return 'Disable PCA'
+    else:
+        return 'Enable PCA'
+
+@dash_app.callback(Output('tab-IRt-axis-dropdown', 'options'),
+              [Input('tab-IRt-pca', 'n_clicks')])
+def tab_IR_axis_dropdown(n_clicks):
+    if n_clicks % 2 == 1:
+        return [{'label': 'PC: ' + l, 'value': i}
+                for i, l in enumerate(['First', 'Second', 'Third'])]
+    else:
+        return [{'label': 'Tenor: ' + t + ' month', 'value': i}
+                for i, t in enumerate(Inp_Pars.tenor)]
+                
 #=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=TAB: hist-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 @dash_app.callback([Output('tab-hist-graph', 'figure'),
@@ -750,5 +810,5 @@ def tab_IR_t_slider_container(date_range):
 #=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-END: TABs-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-
                                 
 if __name__ == '__main__':
-    dash_app.run_server(host='0.0.0.0', port=8080, debug=False)
-    #dash_app.run_server(debug=True)
+    #dash_app.run_server(host='0.0.0.0', port=8080, debug=False)
+    dash_app.run_server(debug=True)

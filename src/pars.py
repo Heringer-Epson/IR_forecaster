@@ -16,6 +16,9 @@ class Inp_Pars(object):
     MC_npaths : ~int
         Number of paths to be simulated.
     """        
+    curr = ['USD', 'CAD']
+    tenor = ['1','2','3','6','12']
+    PCA = ['1', '2', '3']
     dt = 1./253. #Units of years (1 business year ~ 253 days).
     T_sim = 250
     MC_npaths = 100 
