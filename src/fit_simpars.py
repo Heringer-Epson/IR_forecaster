@@ -42,6 +42,7 @@ class Fit_Simpars(object):
     """        
     def __init__(self, X, model, guess):
         self.X = X
+        print(self.X)
         self.model = model
         self.guess = guess
         

@@ -5,6 +5,7 @@ import dash_html_components as html
 import dash_core_components as dcc
 import dash_table
 import numpy as np
+import pandas as pd
 import json
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
@@ -84,7 +85,6 @@ def tab_IR_graph(curr, axis, date_range, n_clicks):
 
     t_min, t_max = utils.format_date(date_range)
     M = Preproc_Data(curr=curr, t_ival=[t_min, t_max]).run()
-    #df = M['{}m_1d'.format(str(tenor))]
     
     merged_df = utils.merge_dataframes([M], [curr], Inp_Pars.tenor, ['1'], 'ir')
     if n_clicks % 2 == 1:
@@ -442,7 +442,7 @@ def tab_term_slider_container(date_range):
     t_min, t_max = utils.format_date(date_range)
     return 'Date range is "{}" -- "{}"'.format(t_min, t_max)
 
-#=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=TAB: Standard Deviation-=-=--=-=-=-=-=-=-=-=-=
+#=-=--=-=-=-=-=-=-=-=-=-=-=-=TAB: Standard Deviation-=-=--=-=-=-=-=-=-=-=-=-=-=
 
 @dash_app.callback(Output('tab-std-graph', 'figure'),
               [Input('tab-std-curr-dropdown', 'value'),
@@ -541,8 +541,9 @@ def set_distr_options(n_clicks):
               [Input('tab-corr-curr-dropdown', 'value'),
                Input('tab-corr-transf-dropdown', 'value'),
                Input('tab-corr-incr-radio', 'value'),
-               Input('corr-year-slider', 'value')])
-def tab_corr_graph(currtag, transf, incrtag, date_range):   
+               Input('corr-year-slider', 'value'),
+               Input('tab-corr-pca', 'n_clicks')])
+def tab_corr_graph(currtag, transf, incrtag, date_range, n_clicks):   
 
     application = utils.transf2application[transf]
     t_min, t_max = utils.format_date(date_range)
@@ -558,11 +559,20 @@ def tab_corr_graph(currtag, transf, incrtag, date_range):
     merged_df = utils.merge_dataframes(M_list, curr_list, tenor_list, incr_list, IR_key)
     columns = merged_df.columns
 
+    if n_clicks % 2 == 1:
+        pca = Compute_Pca(merged_df.values)#.run()
+        columns = ['PCA 1', 'PCA 2', 'PCA 3'] #By default, always use 3 PC's.
+        aux_df = pd.DataFrame(pca.components)
+        z = aux_df.corr()
+    else:
+        columns = merged_df.columns
+        z = merged_df.corr()
+
     traces = []
     traces.append(go.Heatmap(
-        z=merged_df.corr(),
-        x=merged_df.columns,
-        y=merged_df.columns,
+        z=z,
+        x=columns,
+        y=columns,
         colorscale='balance', #'curl', 'delta'
         zmid=0,
     ))
@@ -598,7 +608,16 @@ def tab_IR_t_slider_container(date_range):
     t_min, t_max = utils.format_date(date_range)
     return 'Date range is "{}" -- "{}"'.format(t_min, t_max)
 
-#=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=TAB: corr-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+@dash_app.callback(
+    Output('tab-corr-pca', 'children'),
+    [Input('tab-corr-pca', 'n_clicks')])
+def set_distr_options(n_clicks):
+    if n_clicks % 2 == 1:
+        return 'Disable PCA'
+    else:
+        return 'Enable PCA'
+
+#=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=TAB: PCA-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 @dash_app.callback(Output('tab-pca-graph', 'figure'),
               [Input('tab-pca-curr-dropdown', 'value'),
@@ -662,7 +681,7 @@ def tab_IR_t_slider_container(date_range):
 
 @dash_app.callback(Output('tab-sim-graph', 'figure'),
               [Input('tab-sim-curr-dropdown', 'value'),
-               Input('tab-sim-tenor-dropdown', 'value'),
+               Input('tab-sim-axis-dropdown', 'value'),
                Input('tab-sim-transf-dropdown', 'value'),
                Input('tab-sim-incr-radio', 'value'),
                Input('sim-year-slider', 'value'),
@@ -670,31 +689,46 @@ def tab_IR_t_slider_container(date_range):
                Input('tab-sim-distr-radio', 'value'),
                Input('tab-sim-ndays-dropdown', 'value'),
                Input('tab-sim-npaths-dropdown', 'value'),
+               Input('tab-sim-pca', 'n_clicks'),
                Input('tab-sim-button', 'n_clicks')],)
-def tab_sim_graph(curr, tenor, transf, incr, date_range, model, distr, ndays,
-                  npaths, n_clicks):
+def tab_sim_graph(curr, axis, transf, incr, date_range, model, distr, ndays,
+                  npaths, n_clicks, n_clicks_recalc):
 
     application = utils.transf2application[transf]
     IR_key = utils.transf2IR[transf]
 
     t_min, t_max = utils.format_date(date_range)
-    M = Preproc_Data(curr=curr, incr=[int(incr)], tenor=[tenor],
-                     t_ival=[t_min, t_max], application=application).run()
 
-    current_IR = utils.get_current_ir(M, [tenor], incr)
-    merged_df = utils.merge_dataframes([M], [curr], [tenor], [incr], IR_key)
+    M = Preproc_Data(curr=curr, incr=[int(incr)], t_ival=[t_min, t_max],
+                     application=application).run()
+    merged_df = utils.merge_dataframes(
+      [M], [curr], Inp_Pars.tenor, [int(incr)], IR_key)
+    if n_clicks % 2 == 1:
+        pca = Compute_Pca(merged_df.values)#.run()
+        matrix = np.transpose(pca.components)
+    else:
+        matrix = np.transpose(merged_df.values)
+    
+    #Matrix needed to be keep whole until now to compute PC's.
+    #Select only column (axis) of interest.
+    matrix = np.reshape(matrix[axis], (1,-1))
+    current_y = [y[-1] for y in matrix]
+    
+    #current_IR = utils.get_current_ir(M, [tenor], incr)
+    #merged_df = utils.merge_dataframes([M], [curr], [tenor], [incr], IR_key)
 
-    matrix = np.transpose(merged_df.values)
+    #matrix = np.transpose(merged_df.values)
     guess = utils.pars2guess[transf + '_' + model]
     rng_expr = utils.retrieve_rng_generators(matrix, distr)
 
     paths, mean, std = Forward_Term(
-      matrix, model, transf, rng_expr, current_IR, guess, ndays, npaths).run()
+      matrix, model, transf, rng_expr,
+      current_y, guess, ndays, npaths).run()
 
     traces = []
     time_array = np.arange(0,ndays + 1.e-5,1)
     current_date = str(merged_df.index[0])[0:10]
-    for path in paths[str(int(tenor) - 1)]:
+    for path in paths[str(axis)]:
         traces.append(go.Scattergl(
             x=time_array,
             y=path,
@@ -724,13 +758,31 @@ def set_distr_options(transf):
 def set_distr_value(distr_options):
     return distr_options[0]['value']
 
+@dash_app.callback(
+    Output('tab-sim-pca', 'children'),
+    [Input('tab-sim-pca', 'n_clicks')])
+def set_distr_options(n_clicks):
+    if n_clicks % 2 == 1:
+        return 'Disable PCA'
+    else:
+        return 'Enable PCA'
+
+@dash_app.callback(Output('tab-sim-axis-dropdown', 'options'),
+              [Input('tab-sim-pca', 'n_clicks')])
+def tab_IR_axis_dropdown(n_clicks):
+    if n_clicks % 2 == 1:
+        return [{'label': 'PC: ' + l, 'value': i}
+                for i, l in enumerate(['First', 'Second', 'Third'])]
+    else:
+        return [{'label': 'Tenor: ' + t + ' month', 'value': i}
+                for i, t in enumerate(Inp_Pars.tenor)]
+
 @dash_app.callback(Output('tab-sim-slider', 'children'),
               [Input('tab-sim-curr-dropdown', 'value'),
-               Input('tab-sim-incr-radio', 'value'),
-               Input('tab-sim-tenor-dropdown', 'value')])
-def tab_IR_t_slider(curr, incr, tenor):
+               Input('tab-sim-incr-radio', 'value')])
+def tab_IR_t_slider(curr, incr):
     t_min, t_max, t_list = utils.compute_t_range(
-      currtag=curr, incrtag=incr, tenor=[int(tenor)])
+      currtag=curr, incrtag=incr, tenor=[1])
     return html.Div(
         dcc.RangeSlider(
             id='sim-year-slider',

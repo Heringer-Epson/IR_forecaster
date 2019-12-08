@@ -72,6 +72,7 @@ class Forward_Term(object):
     def calculate_corr_matrix(self):
         corr_matrix = np.corrcoef(self.matrix)
         self.dec = cholesky(corr_matrix, lower=False)
+        #print(self.dec)
 
     def generate_random(self):
                         

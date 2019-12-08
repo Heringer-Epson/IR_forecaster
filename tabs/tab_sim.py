@@ -16,12 +16,10 @@ tab_sim_layout = html.Div([
             style={'width': '100px', 'marginLeft': '.5em'},
         ),       
        
-        html.H6('Tenor:', style={'marginLeft': '3em'}),
+        html.H6('Axis:', style={'marginLeft': '3em'}),
         dcc.Dropdown(
-            id='tab-sim-tenor-dropdown',
-            options=[{'label': i + ' month', 'value': i}
-                     for i in ['1', '2', '3', '6', '12']],
-            value='1',
+            id='tab-sim-axis-dropdown',
+            value=0,
             style={'width': '150px', 'marginLeft': '.5em'},
         ),
 
@@ -40,6 +38,13 @@ tab_sim_layout = html.Div([
             options=[{'label': '{} day'.format(str(i)), 'value': i} for i in ['1', '25']],
             value='1',
         ),
+
+        html.Button(
+                id='tab-sim-pca',
+                children='Enable PCA',
+                n_clicks=0,
+                style={'width': '150px', 'marginLeft': '5em'}),         
+                
         ], style={'display': 'flex', 'marginTop': '1.5em'}), 
 
     html.Div([
