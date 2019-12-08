@@ -214,7 +214,6 @@ def tab_IRt_graph(curr, axis, transf, date_range, n_clicks):
         )
     }       
 
-
 @dash_app.callback(Output('tab-IRt-slider', 'children'),
               [Input('tab-IRt-curr-dropdown', 'value'),])
 def tab_IRt_slider(curr):
@@ -260,19 +259,28 @@ def tab_IR_axis_dropdown(n_clicks):
 @dash_app.callback([Output('tab-hist-graph', 'figure'),
                Output('tab-hist-table', 'children')],
               [Input('tab-hist-curr-dropdown', 'value'),
-               Input('tab-hist-tenor-dropdown', 'value'),
+               Input('tab-hist-axis-dropdown', 'value'),
                Input('tab-hist-transf-dropdown', 'value'),
                Input('tab-hist-incr-radio', 'value'),
-               Input('hist-year-slider', 'value')])
-def tab_hist_graph(curr, tenor, transf, incr, date_range):
+               Input('hist-year-slider', 'value'),
+               Input('tab-hist-pca', 'n_clicks')])
+def tab_hist_graph(curr, axis, transf, incr, date_range, n_clicks):
     application = utils.transf2application[transf]
     IR_key = utils.transf2IR[transf]
 
     t_min, t_max = utils.format_date(date_range)
-    M = Preproc_Data(curr=curr, incr=[int(incr)], tenor=[tenor],
-                     t_ival=[t_min, t_max], application=application).run()
-    df = M['{}m_{}d'.format(str(tenor), incr)]
-    y = df[IR_key].values
+    M = Preproc_Data(curr=curr, incr=[int(incr)], t_ival=[t_min, t_max],
+                     application=application).run()
+    
+    merged_df = utils.merge_dataframes(
+      [M], [curr], Inp_Pars.tenor, [int(incr)], IR_key)
+    if n_clicks % 2 == 1:
+        pca = Compute_Pca(merged_df.values)#.run()
+        transformed_matrix = np.transpose(pca.components)
+        y = transformed_matrix[axis]
+    else:
+        y = np.transpose(merged_df.values)[axis]
+
     hist, bins, fit_dict, pdfs = Fit_Distr(y).run_fitting()
     
     traces = []
@@ -315,12 +323,11 @@ def tab_hist_graph(curr, tenor, transf, incr, date_range):
 
 @dash_app.callback(Output('tab-hist-slider', 'children'),
               [Input('tab-hist-curr-dropdown', 'value'),
-               Input('tab-hist-incr-radio', 'value'),
-               Input('tab-hist-tenor-dropdown', 'value')])
-def tab_IR_t_slider(curr, incr, tenor):
+               Input('tab-hist-incr-radio', 'value'),])
+def tab_hist_slider(curr, incr):
     t_min, t_max, t_list = utils.compute_t_range(
-      currtag=curr, incrtag=incr, tenor=[int(tenor)])
-
+      currtag=curr, incrtag=incr, tenor=[1])
+      
     return html.Div(
         dcc.RangeSlider(
             id='hist-year-slider',
@@ -334,9 +341,28 @@ def tab_IR_t_slider(curr, incr, tenor):
 
 @dash_app.callback(Output('tab-hist-slider-container', 'children'),
               [Input('hist-year-slider', 'value')])
-def tab_IR_t_slider_container(date_range):
+def tab_hist_slider_container(date_range):
     t_min, t_max = utils.format_date(date_range)
     return 'Date range is "{}" -- "{}"'.format(t_min, t_max)
+
+@dash_app.callback(
+    Output('tab-hist-pca', 'children'),
+    [Input('tab-hist-pca', 'n_clicks')])
+def set_distr_options(n_clicks):
+    if n_clicks % 2 == 1:
+        return 'Disable PCA'
+    else:
+        return 'Enable PCA'
+
+@dash_app.callback(Output('tab-hist-axis-dropdown', 'options'),
+              [Input('tab-hist-pca', 'n_clicks')])
+def tab_IR_axis_dropdown(n_clicks):
+    if n_clicks % 2 == 1:
+        return [{'label': 'PC: ' + l, 'value': i}
+                for i, l in enumerate(['First', 'Second', 'Third'])]
+    else:
+        return [{'label': 'Tenor: ' + t + ' month', 'value': i}
+                for i, t in enumerate(Inp_Pars.tenor)]
 
 #=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=TAB: term-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
@@ -416,13 +442,14 @@ def tab_term_slider_container(date_range):
     t_min, t_max = utils.format_date(date_range)
     return 'Date range is "{}" -- "{}"'.format(t_min, t_max)
 
-#=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=TAB: term-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+#=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=TAB: Standard Deviation-=-=--=-=-=-=-=-=-=-=-=
 
 @dash_app.callback(Output('tab-std-graph', 'figure'),
               [Input('tab-std-curr-dropdown', 'value'),
                Input('tab-std-transf-dropdown', 'value'),
-               Input('std-year-slider', 'value')])
-def tab_hist_graph(curr, transf, date_range):
+               Input('std-year-slider', 'value'),
+               Input('tab-std-pca', 'n_clicks')])
+def tab_hist_graph(curr, transf, date_range, n_clicks):
     
     application = utils.transf2application[transf]
     IR_key = utils.transf2IR[transf]
@@ -432,14 +459,36 @@ def tab_hist_graph(curr, transf, date_range):
       curr=curr, t_ival=[t_min, t_max], application=application).run()
     tenors = M['tenor'] #Using the default tenors. i.e. [1,2,3,6,12]
     
-    std_ratio = [M['{}m_25d'.format(str(t))][IR_key].std()\
-                 /M['{}m_1d'.format(str(t))][IR_key].std()
-                 for t in tenors]
+    merged_df_1 = utils.merge_dataframes(
+      [M], [curr], Inp_Pars.tenor, ['1'], IR_key)
+    merged_df_25 = utils.merge_dataframes(
+      [M], [curr], Inp_Pars.tenor, ['25'], IR_key)
+    
+    if n_clicks % 2 == 1:
+        pca_1 = Compute_Pca(merged_df_1.values)#.run()
+        transformed_matrix_1 = np.transpose(pca_1.components)
+        aux_1 = transformed_matrix_1
+
+        pca_25 = Compute_Pca(merged_df_25.values)#.run()
+        transformed_matrix_25 = np.transpose(pca_25.components)
+        aux_25 = transformed_matrix_25
+
+        x = Inp_Pars.PCA
+        y = [np.std(aux_25[i]) / np.std(aux_1[i]) for i in range(len(x))]
+        x_label = 'Principal Component'
+
+  
+    else:
+        aux_1 = np.transpose(merged_df_1.values)
+        aux_25 = np.transpose(merged_df_25.values)
+        x = Inp_Pars.tenor
+        y = [np.std(aux_25[i]) / np.std(aux_1[i]) for i in range(len(x))]
+        x_label = 'Maturity [months]'
     
     traces = []
     traces.append(go.Scattergl(
-        x=tenors,
-        y=std_ratio,
+        x=x,
+        y=y,
         mode='lines+markers',
         opacity=1.,
         line=dict(color='black', width=4.),
@@ -450,7 +499,7 @@ def tab_hist_graph(curr, transf, date_range):
     return {
         'data': traces,
         'layout': dict(
-            xaxis={'title': 'Maturity [months]',},
+            xaxis={'title': x_label,},
             yaxis={'title': r'std(T=25d) / std(T=1d)',},
             hovermode='closest',
         )
@@ -476,6 +525,15 @@ def tab_term_slider(curr):
 def tab_term_slider_container(date_range):
     t_min, t_max = utils.format_date(date_range)
     return 'Date range is "{}" -- "{}"'.format(t_min, t_max)
+
+@dash_app.callback(
+    Output('tab-std-pca', 'children'),
+    [Input('tab-std-pca', 'n_clicks')])
+def set_distr_options(n_clicks):
+    if n_clicks % 2 == 1:
+        return 'Disable PCA'
+    else:
+        return 'Enable PCA'
 
 #=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=TAB: corr-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 

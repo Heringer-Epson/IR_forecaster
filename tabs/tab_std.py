@@ -23,6 +23,12 @@ tab_std_layout = html.Div([
             value='Diff.',
             style={'width': '150px', 'marginLeft': '.5em'},
         ),    
+
+        html.Button(
+                id='tab-std-pca',
+                children='Enable PCA',
+                n_clicks=0,
+                style={'width': '150px', 'marginLeft': '5em'}),   
         
         ], style={'display': 'flex', 'marginTop': '1.5em'}), 
     
