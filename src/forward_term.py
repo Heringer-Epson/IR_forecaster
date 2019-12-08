@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import numpy as np
+import pandas as pd
 import scipy.stats
 from scipy.linalg import cholesky
 from scipy.linalg import sqrtm
@@ -47,8 +48,8 @@ class Forward_Term(object):
     of such paths. 
     """           
     def __init__(self, matrix, model, transf, rng_expr, guess, ndays,
-                 npaths=Inp_Pars.MC_npaths, convert_IR=False, current_IR=None,
-                 pca=None):
+                 npaths=Inp_Pars.MC_npaths, current_IR=None,
+                 use_pca=False):
         self.matrix = matrix
         self.model = model
         self.transf = transf
@@ -56,9 +57,8 @@ class Forward_Term(object):
         self.guess = guess
         self.ndays = ndays
         self.npaths = npaths
-        self.convert_IR = convert_IR
         self.current_IR = current_IR
-        self.pca = pca
+        self.use_pca = use_pca
         
         self.Nt = self.matrix.shape[0] #Number of tenors (or PC's. 
         
@@ -89,27 +89,37 @@ class Forward_Term(object):
 
         #For each path, use the function above to draw random numbers (RN),
         #such that self.random_number[npaths][ndays][ntenor]
-        if self.pca is None:
+        if not self.use_pca:
             self.random_number = [np.dot(produce_random(self.Nt), self.dec) 
                                   for j in range(self.npaths)]
-            print('Cho method', np.mean(self.random_number))
 
         else:
-            E = np.transpose(self.pca.components_)
-            lmbda = np.diag(self.pca.explained_variance_)
-            sqrt_lmbda = sqrtm(lmbda)
+            #Use PCA to reduce the dimensionality of the problem. i.e. instead
+            #of computing random numbers for all 5 tenors, compute only random
+            #numbers in 3 principal component axis. This does not require the
+            #scipy PCA package. Simply compute the correlation matrix of the IR
+            #or transformed IR and then compute its eigenvalues and eigenvectors.
+            #Use only the 3 first eigenvalues and vector dimensions. Draw 3
+            #uncorrelated random numbers and produce 5 correlated random numbers
+            #using _corr = E*sqrt(lambda)*Z_uncorr.
+            #See https://www.risklatte.xyz/Articles/QuantitativeFinance/QF151.php
             n_PCA = len(Inp_Pars.PCA)
-            Z = np.transpose(produce_random(n_PCA))
+            aux_df = pd.DataFrame(np.transpose(self.matrix))
+            M = aux_df.corr()
+            w, E = np.linalg.eig(M.values)
             
-            #Produce N correlated random numbers using the PCA method.
-            #Z_corr = E*sqrt(lambda)*Z
-            #https://www.risklatte.xyz/Articles/QuantitativeFinance/QF151.php
-            mat_mult1 = np.dot(E, sqrt_lmbda) 
+            #Select only the most relevant components (dimesions)s. i.e.,
+            #first n_PCA components.
+            lmbda = np.diag(w[0:n_PCA])
+            E_reduced = E[:,0:n_PCA]
+            
+            sqrt_lmbda = sqrtm(lmbda)
+            Z = np.transpose(produce_random(n_PCA))
+                        
+            mat_mult1 = np.dot(E_reduced, sqrt_lmbda) 
             self.random_number = [
               np.transpose(np.dot(mat_mult1, np.transpose(produce_random(n_PCA)))) 
-              for j in range(self.npaths)]
-            print('Z method', np.mean(self.random_number))
-
+              for j in range(self.npaths)]    
         
     def calculate_forward(self):
         for i in range(self.Nt): #loop over tenor
@@ -145,7 +155,6 @@ class Forward_Term(object):
         self.calculate_corr_matrix()
         self.generate_random()
         self.calculate_forward()
-        if self.convert_IR:
-            self.make_IR_conversion()
+        self.make_IR_conversion()
         self.prepare_output()
         return self.paths, np.transpose(self.mean).tolist(), np.transpose(self.std).tolist()

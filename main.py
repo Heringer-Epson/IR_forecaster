@@ -693,10 +693,9 @@ def tab_IR_t_slider_container(date_range):
     return 'Date range is "{}" -- "{}"'.format(t_min, t_max)
 
 #=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-TAB: Sim-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-
 @dash_app.callback(Output('tab-sim-graph', 'figure'),
               [Input('tab-sim-curr-dropdown', 'value'),
-               Input('tab-sim-axis-dropdown', 'value'),
+               Input('tab-sim-tenor-dropdown', 'value'),
                Input('tab-sim-transf-dropdown', 'value'),
                Input('tab-sim-incr-radio', 'value'),
                Input('sim-year-slider', 'value'),
@@ -704,39 +703,26 @@ def tab_IR_t_slider_container(date_range):
                Input('tab-sim-distr-radio', 'value'),
                Input('tab-sim-ndays-dropdown', 'value'),
                Input('tab-sim-npaths-dropdown', 'value'),
-               Input('tab-sim-pca', 'n_clicks'),
                Input('tab-sim-button', 'n_clicks')],)
-def tab_sim_graph(curr, axis, transf, incr, date_range, model, distr, ndays,
-                  npaths, n_clicks, n_clicks_recalc):
+def tab_sim_graph(curr, tenor, transf, incr, date_range, model, distr, ndays,
+                  npaths, n_clicks):
 
     application = utils.transf2application[transf]
     IR_key = utils.transf2IR[transf]
 
     t_min, t_max = utils.format_date(date_range)
+    M = Preproc_Data(curr=curr, incr=[int(incr)], tenor=[tenor],
+                     t_ival=[t_min, t_max], application=application).run()
 
-    M = Preproc_Data(curr=curr, incr=[int(incr)], t_ival=[t_min, t_max],
-                     application=application).run()
-    merged_df = utils.merge_dataframes(
-      [M], [curr], Inp_Pars.tenor, [int(incr)], IR_key)
-    if n_clicks % 2 == 1:
-        pca = Compute_Pca(merged_df.values)#.run()
-        matrix = np.transpose(pca.components)
-    else:
-        matrix = np.transpose(merged_df.values)
-    
-    #Matrix needed to be keep whole until now to compute PC's.
-    #Select only column (axis) of interest.
-    matrix = np.reshape(matrix[axis], (1,-1))
-    
-    #current_IR = utils.get_current_ir(M, [tenor], incr)
-    #merged_df = utils.merge_dataframes([M], [curr], [tenor], [incr], IR_key)
+    current_IR = utils.get_current_ir(M, [tenor], incr)
+    merged_df = utils.merge_dataframes([M], [curr], [tenor], [incr], IR_key)
 
-    #matrix = np.transpose(merged_df.values)
+    matrix = np.transpose(merged_df.values)
     guess = utils.pars2guess[transf + '_' + model]
     rng_expr = utils.retrieve_rng_generators(matrix, distr)
 
     paths, mean, std = Forward_Term(
-      matrix, model, transf, rng_expr, guess, ndays, npaths, False, None, None).run()
+      matrix, model, transf, rng_expr, guess, ndays, npaths, current_IR, None).run()
 
     traces = []
     time_array = np.arange(0,ndays + 1.e-5,1)
@@ -771,36 +757,13 @@ def set_distr_options(transf):
 def set_distr_value(distr_options):
     return distr_options[0]['value']
 
-@dash_app.callback(
-    Output('tab-sim-pca', 'children'),
-    [Input('tab-sim-pca', 'n_clicks')])
-def set_distr_options(n_clicks):
-    if n_clicks % 2 == 1:
-        return 'Disable PCA'
-    else:
-        return 'Enable PCA'
-
-@dash_app.callback(Output('tab-sim-axis-dropdown', 'options'),
-              [Input('tab-sim-pca', 'n_clicks')])
-def tab_sim_axis_dropdown(n_clicks):
-    if n_clicks % 2 == 1:
-        return [{'label': 'PC: ' + l, 'value': i}
-                for i, l in enumerate(['First', 'Second', 'Third'])]
-    else:
-        return [{'label': 'Tenor: ' + t + ' month', 'value': i}
-                for i, t in enumerate(Inp_Pars.tenor)]
-
-@dash_app.callback(Output('tab-sim-axis-dropdown', 'value'),
-              [Input('tab-sim-pca', 'n_clicks')])
-def tab_sim_axisv_dropdown(n_clicks):
-    return 0
-
 @dash_app.callback(Output('tab-sim-slider', 'children'),
               [Input('tab-sim-curr-dropdown', 'value'),
-               Input('tab-sim-incr-radio', 'value')])
-def tab_IR_t_slider(curr, incr):
+               Input('tab-sim-incr-radio', 'value'),
+               Input('tab-sim-tenor-dropdown', 'value')])
+def tab_IR_t_slider(curr, incr, tenor):
     t_min, t_max, t_list = utils.compute_t_range(
-      currtag=curr, incrtag=incr, tenor=[1])
+      currtag=curr, incrtag=incr, tenor=[int(tenor)])
     return html.Div(
         dcc.RangeSlider(
             id='sim-year-slider',
@@ -814,7 +777,7 @@ def tab_IR_t_slider(curr, incr):
 
 @dash_app.callback(Output('tab-sim-slider-container', 'children'),
               [Input('sim-year-slider', 'value')])
-def tab_sim_t_slider_container(date_range):
+def tab_IR_t_slider_container(date_range):
     t_min, t_max = utils.format_date(date_range)
     return 'Date range is "{}" -- "{}"'.format(t_min, t_max)
     
@@ -841,21 +804,21 @@ def tab_calculate_term(curr, transf, incr, date_range, model, distr, n_clicks):
     current_IR = utils.get_current_ir(M, Inp_Pars.tenor, incr)
 
     if n_clicks % 2 == 1:
-        pca = Compute_Pca(merged_df.values)#.run()
+        use_pca = True
         #matrix = np.transpose(pca.components)
     else:
-        pca = None
+        use_pca = False
 
     matrix = np.transpose(merged_df.values)
-
     current_date = str(merged_df.index[0])[0:10]
     matrix = np.transpose(merged_df.values)
     guess = utils.pars2guess[transf + '_' + model]
     rng_expr = utils.retrieve_rng_generators(matrix, distr)
 
     paths, mean, std = Forward_Term(
-      matrix, model, transf, rng_expr, guess, Inp_Pars.T_sim, convert_IR=True,
-      current_IR=current_IR, pca=pca).run()
+      matrix, model, transf, rng_expr, guess, Inp_Pars.T_sim,
+      current_IR=current_IR, use_pca=use_pca).run()
+
     out_json = [mean, std, Inp_Pars.tenor, current_date]
     return json.dumps(out_json)
 
