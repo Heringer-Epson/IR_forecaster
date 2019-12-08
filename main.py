@@ -155,6 +155,11 @@ def tab_IR_axis_dropdown(n_clicks):
         return [{'label': 'Tenor: ' + t + ' month', 'value': i}
                 for i, t in enumerate(Inp_Pars.tenor)]
 
+@dash_app.callback(Output('tab-IR-axis-dropdown', 'value'),
+              [Input('tab-IR-pca', 'n_clicks')])
+def tab_IR_axisv_dropdown(n_clicks):
+    return 0
+
 #=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=TAB: IRt-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 @dash_app.callback(Output('tab-IRt-graph', 'figure'),
@@ -246,13 +251,18 @@ def set_distr_options(n_clicks):
 
 @dash_app.callback(Output('tab-IRt-axis-dropdown', 'options'),
               [Input('tab-IRt-pca', 'n_clicks')])
-def tab_IR_axis_dropdown(n_clicks):
+def tab_IRt_axis_dropdown(n_clicks):
     if n_clicks % 2 == 1:
         return [{'label': 'PC: ' + l, 'value': i}
                 for i, l in enumerate(['First', 'Second', 'Third'])]
     else:
         return [{'label': 'Tenor: ' + t + ' month', 'value': i}
                 for i, t in enumerate(Inp_Pars.tenor)]
+
+@dash_app.callback(Output('tab-IRt-axis-dropdown', 'value'),
+              [Input('tab-IRt-pca', 'n_clicks')])
+def tab_IRt_axisv_dropdown(n_clicks):
+    return 0
                 
 #=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=TAB: hist-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
@@ -356,13 +366,18 @@ def set_distr_options(n_clicks):
 
 @dash_app.callback(Output('tab-hist-axis-dropdown', 'options'),
               [Input('tab-hist-pca', 'n_clicks')])
-def tab_IR_axis_dropdown(n_clicks):
+def tab_hist_axis_dropdown(n_clicks):
     if n_clicks % 2 == 1:
         return [{'label': 'PC: ' + l, 'value': i}
                 for i, l in enumerate(['First', 'Second', 'Third'])]
     else:
         return [{'label': 'Tenor: ' + t + ' month', 'value': i}
                 for i, t in enumerate(Inp_Pars.tenor)]
+
+@dash_app.callback(Output('tab-hist-axis-dropdown', 'value'),
+              [Input('tab-hist-pca', 'n_clicks')])
+def tab_hist_axisv_dropdown(n_clicks):
+    return 0
 
 #=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=TAB: term-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
@@ -712,7 +727,6 @@ def tab_sim_graph(curr, axis, transf, incr, date_range, model, distr, ndays,
     #Matrix needed to be keep whole until now to compute PC's.
     #Select only column (axis) of interest.
     matrix = np.reshape(matrix[axis], (1,-1))
-    current_y = [y[-1] for y in matrix]
     
     #current_IR = utils.get_current_ir(M, [tenor], incr)
     #merged_df = utils.merge_dataframes([M], [curr], [tenor], [incr], IR_key)
@@ -722,13 +736,12 @@ def tab_sim_graph(curr, axis, transf, incr, date_range, model, distr, ndays,
     rng_expr = utils.retrieve_rng_generators(matrix, distr)
 
     paths, mean, std = Forward_Term(
-      matrix, model, transf, rng_expr,
-      current_y, guess, ndays, npaths).run()
+      matrix, model, transf, rng_expr, guess, ndays, npaths, False, None, None).run()
 
     traces = []
     time_array = np.arange(0,ndays + 1.e-5,1)
     current_date = str(merged_df.index[0])[0:10]
-    for path in paths[str(axis)]:
+    for path in paths['0']:
         traces.append(go.Scattergl(
             x=time_array,
             y=path,
@@ -769,13 +782,18 @@ def set_distr_options(n_clicks):
 
 @dash_app.callback(Output('tab-sim-axis-dropdown', 'options'),
               [Input('tab-sim-pca', 'n_clicks')])
-def tab_IR_axis_dropdown(n_clicks):
+def tab_sim_axis_dropdown(n_clicks):
     if n_clicks % 2 == 1:
         return [{'label': 'PC: ' + l, 'value': i}
                 for i, l in enumerate(['First', 'Second', 'Third'])]
     else:
         return [{'label': 'Tenor: ' + t + ' month', 'value': i}
                 for i, t in enumerate(Inp_Pars.tenor)]
+
+@dash_app.callback(Output('tab-sim-axis-dropdown', 'value'),
+              [Input('tab-sim-pca', 'n_clicks')])
+def tab_sim_axisv_dropdown(n_clicks):
+    return 0
 
 @dash_app.callback(Output('tab-sim-slider', 'children'),
               [Input('tab-sim-curr-dropdown', 'value'),
@@ -796,7 +814,7 @@ def tab_IR_t_slider(curr, incr):
 
 @dash_app.callback(Output('tab-sim-slider-container', 'children'),
               [Input('sim-year-slider', 'value')])
-def tab_IR_t_slider_container(date_range):
+def tab_sim_t_slider_container(date_range):
     t_min, t_max = utils.format_date(date_range)
     return 'Date range is "{}" -- "{}"'.format(t_min, t_max)
     
@@ -808,8 +826,9 @@ def tab_IR_t_slider_container(date_range):
                Input('tab-pred-incr-radio', 'value'),
                Input('pred-year-slider', 'value'),
                Input('tab-pred-model-dropdown', 'value'),
-               Input('tab-pred-distr-radio', 'value')],)
-def tab_calculate_term(curr, transf, incr, date_range, model, distr):
+               Input('tab-pred-distr-radio', 'value'),
+               Input('tab-pred-pca', 'n_clicks')],)
+def tab_calculate_term(curr, transf, incr, date_range, model, distr, n_clicks):
 
     application = utils.transf2application[transf]
     IR_key = utils.transf2IR[transf]
@@ -818,18 +837,26 @@ def tab_calculate_term(curr, transf, incr, date_range, model, distr):
     M = Preproc_Data(curr=curr, incr=[int(incr)], t_ival=[t_min, t_max],
                      application=application).run()
 
-    tenors = M['tenor'] #Using the default tenors. i.e. [1,2,3,6,12]
-    current_IR = utils.get_current_ir(M, tenors, incr)
+    merged_df = utils.merge_dataframes([M], [curr], Inp_Pars.tenor, [incr], IR_key)
+    current_IR = utils.get_current_ir(M, Inp_Pars.tenor, incr)
 
-    merged_df = utils.merge_dataframes([M], [curr], tenors, [incr], IR_key)
+    if n_clicks % 2 == 1:
+        pca = Compute_Pca(merged_df.values)#.run()
+        #matrix = np.transpose(pca.components)
+    else:
+        pca = None
+
+    matrix = np.transpose(merged_df.values)
+
     current_date = str(merged_df.index[0])[0:10]
     matrix = np.transpose(merged_df.values)
     guess = utils.pars2guess[transf + '_' + model]
     rng_expr = utils.retrieve_rng_generators(matrix, distr)
 
     paths, mean, std = Forward_Term(
-      matrix, model, transf, rng_expr, current_IR, guess, Inp_Pars.T_sim).run()
-    out_json = [mean, std, tenors, current_date]
+      matrix, model, transf, rng_expr, guess, Inp_Pars.T_sim, convert_IR=True,
+      current_IR=current_IR, pca=pca).run()
+    out_json = [mean, std, Inp_Pars.tenor, current_date]
     return json.dumps(out_json)
 
 @dash_app.callback(Output('tab-pred-graph', 'figure'),
@@ -893,6 +920,20 @@ def tab_IR_t_slider(curr, incr):
             step=1,
         )
     )  
+
+@dash_app.callback(
+    Output('tab-pred-pca', 'children'),
+    [Input('tab-pred-pca', 'n_clicks')])
+def set_distr_options(n_clicks):
+    if n_clicks % 2 == 1:
+        return 'Disable PCA'
+    else:
+        return 'Enable PCA'
+
+@dash_app.callback(Output('tab-pred-axis-dropdown', 'value'),
+              [Input('tab-pred-pca', 'n_clicks')])
+def tab_pred_axisv_dropdown(n_clicks):
+    return 0
 
 @dash_app.callback(Output('tab-pred-slider', 'children'),
               [Input('tab-pred-curr-dropdown', 'value'),

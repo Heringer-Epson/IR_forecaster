@@ -24,8 +24,9 @@ class Compute_Pca(object):
     def decompose(self):
         self.pca = PCA(n_components=self.n)
         self.pca.fit(self.matrix)
-        self.components = self.pca.transform(self.matrix)
-        self.eigenvalues = self.pca.explained_variance_
+        self.components = self.pca.transform(self.matrix) #Rename this...
+        self.components_ = self.pca.components_
+        self.explained_variance_ = self.pca.explained_variance_
         
     #def run(self):
     #    self.decompose()

@@ -3,6 +3,7 @@
 import numpy as np
 import scipy.stats
 from scipy.linalg import cholesky
+from scipy.linalg import sqrtm
 
 from pars import Inp_Pars
 from fit_simpars import Fit_Simpars
@@ -45,18 +46,21 @@ class Forward_Term(object):
     paths: A list of IR future paths, and lists containg the mean and std
     of such paths. 
     """           
-    def __init__(self, matrix, model, transf, rng_expr, current_IR, guess,
-                 ndays, npaths=Inp_Pars.MC_npaths):
+    def __init__(self, matrix, model, transf, rng_expr, guess, ndays,
+                 npaths=Inp_Pars.MC_npaths, convert_IR=False, current_IR=None,
+                 pca=None):
         self.matrix = matrix
         self.model = model
         self.transf = transf
         self.rng_expr = rng_expr
-        self.current_IR = current_IR
         self.guess = guess
         self.ndays = ndays
         self.npaths = npaths
+        self.convert_IR = convert_IR
+        self.current_IR = current_IR
+        self.pca = pca
         
-        self.Nt = self.matrix.shape[0] #Number of tenors 
+        self.Nt = self.matrix.shape[0] #Number of tenors (or PC's. 
         
         self.dec = None
         self.random_number = None
@@ -67,12 +71,10 @@ class Forward_Term(object):
     def get_fit_pars(self):
         for X in self.matrix:
             self.fit.append(Fit_Simpars(X, self.model, self.guess).run())
-        #print(self.fit)
 
     def calculate_corr_matrix(self):
         corr_matrix = np.corrcoef(self.matrix)
         self.dec = cholesky(corr_matrix, lower=False)
-        #print(self.dec)
 
     def generate_random(self):
                         
@@ -80,16 +82,35 @@ class Forward_Term(object):
         #correspond to different days and columns to different tenors.
         #For each column, the RN are drawn from the distribution that best
         #Fitted the IR (or IR_transf) of that tenor.
-        def produce_random():           
+        def produce_random(n_axis):           
             rdm_for_onepath = [eval(self.rng_expr[i] + str(self.ndays) + ')')
-                               for i in range(self.Nt)]
+                               for i in range(n_axis)]
             return np.transpose(rdm_for_onepath)
 
         #For each path, use the function above to draw random numbers (RN),
         #such that self.random_number[npaths][ndays][ntenor]
-        self.random_number = [np.dot(produce_random(), self.dec) 
-                              for j in range(self.npaths)]
-    
+        if self.pca is None:
+            self.random_number = [np.dot(produce_random(self.Nt), self.dec) 
+                                  for j in range(self.npaths)]
+            print('Cho method', np.mean(self.random_number))
+
+        else:
+            E = np.transpose(self.pca.components_)
+            lmbda = np.diag(self.pca.explained_variance_)
+            sqrt_lmbda = sqrtm(lmbda)
+            n_PCA = len(Inp_Pars.PCA)
+            Z = np.transpose(produce_random(n_PCA))
+            
+            #Produce N correlated random numbers using the PCA method.
+            #Z_corr = E*sqrt(lambda)*Z
+            #https://www.risklatte.xyz/Articles/QuantitativeFinance/QF151.php
+            mat_mult1 = np.dot(E, sqrt_lmbda) 
+            self.random_number = [
+              np.transpose(np.dot(mat_mult1, np.transpose(produce_random(n_PCA)))) 
+              for j in range(self.npaths)]
+            print('Z method', np.mean(self.random_number))
+
+        
     def calculate_forward(self):
         for i in range(self.Nt): #loop over tenor
             X_0 = self.matrix[i][-1]
@@ -98,7 +119,7 @@ class Forward_Term(object):
               X_0, self.fit[i], self.model, np.transpose(
               self.random_number[j])[i]).run() for j in range(self.npaths)])
 
-    def convert_IR(self):
+    def make_IR_conversion(self):
         if self.transf == 'Diff.':
             for i in range(self.Nt): #loop over tenor
                 for j in range(self.npaths):
@@ -118,26 +139,13 @@ class Forward_Term(object):
             aux_mat = np.transpose(self.paths[str(j)])
             self.mean.append([np.mean(aux_mat[i]) for i in range(self.ndays)])
             self.std.append([np.std(aux_mat[i]) for i in range(self.ndays)])
-
-        '''
-        #Tenor 1mon
-        print('1mon')
-        aux_mat = np.transpose(self.paths[str(0)])
-        print(aux_mat[1])
-        print(aux_mat[-1])
-
-        #Tenor 12mon
-        print('12-mon')
-        aux_mat = np.transpose(self.paths[str(4)])
-        print(aux_mat[1])
-        print(aux_mat[-1])
-        '''
     
     def run(self):
         self.get_fit_pars()
         self.calculate_corr_matrix()
         self.generate_random()
         self.calculate_forward()
-        self.convert_IR()
+        if self.convert_IR:
+            self.make_IR_conversion()
         self.prepare_output()
         return self.paths, np.transpose(self.mean).tolist(), np.transpose(self.std).tolist()
