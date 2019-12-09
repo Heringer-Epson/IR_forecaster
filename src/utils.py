@@ -29,8 +29,9 @@ pars2guess = {
   'Diff._Vasicek': 'theta1=0.0001, theta2=1., theta3=0.005',
   'Log ratio_Vasicek': 'theta1=0.0001, theta2=1., theta3=0.005',
   'Raw_Brownian': 'theta1=0.005, theta2=0.005',
-  'Diff._Brownian': 'theta1=0.003, theta2=0.00001', ##Improve
-  'Log ratio_Brownian': 'theta1=0.005, theta2=0.005' ##Improve
+  #Removing the combination below. Fit always seem to prefer theta2 (sigma)=0.
+  #'Diff._Brownian': 'theta1=0.003, theta2=0.00001', ##Improve
+  #'Log ratio_Brownian': 'theta1=0.005, theta2=0.005' ##Improve
 }
 
 def sort_pdfs(D, pdfs):

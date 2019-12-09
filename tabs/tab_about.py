@@ -17,7 +17,7 @@ tab_about_layout = html.Div([
             style={'font-weight':'bold'}
         ),
         html.H3(
-            'v(1.0.0)',
+            'v(1.1.0)',
             style={'marginLeft': '0.75em'}
         ),    
     ], style={'display': 'flex', 'marginLeft': '3em', 'marginTop': '1.5em'}),
@@ -37,29 +37,47 @@ tab_about_layout = html.Div([
             html.Div([
                 dcc.Markdown(
                     """
-                    ###### OVERVIEW
-                    This web app provides interactive plotting and analytical
-                    functions to facilitate the analysis
-                    
-                    of intrabank rates. The user may choose to work with
-                    transformed rates (rate differences or
-                     
-                    log of rate ratios), over a daily or monthly period. Such
-                    mappings typically improve the model accuracy.
+                    ###### GOAL
+                    To predict the term structure of intrabank rates (IR). 
                     
                     &nbsp;&nbsp;&nbsp;&nbsp;
                     
+                    ###### OVERVIEW
+                    This web app provides interactive plotting and analytical
+                    functions to facilitate the analysis of IRs.
+                    
+                    The user may choose among several options to customize this
+                    analysis:
+                    
+                    &nbsp;&nbsp;&nbsp;&nbsp; **Currency:** Target currency
+                    (USD or CAD).
+                    
+                    &nbsp;&nbsp;&nbsp;&nbsp; **Tenor:** Which length of time
+                    the rate applies to.
+                    
+                    &nbsp;&nbsp;&nbsp;&nbsp; **Transformation:** Apply a
+                    transformation to the data. e.g. (rate differences or log
+                    of rate ratios).
+                    
+                    &nbsp;&nbsp;&nbsp;&nbsp; **Over:** Compare rates over a
+                    daily or monthly period.
+                    
+                    &nbsp;&nbsp;&nbsp;&nbsp; **Enable PCA:** Uses principal
+                    component analysis (PCA) to reduce the dimensionality
+                    of the data.
+                    
+                    &nbsp;&nbsp;&nbsp;&nbsp; **Model:** Which financial model
+                    to use to compute future rates (Vasicek or Geometric brownian).
+                    
+                    &nbsp;&nbsp;&nbsp;&nbsp; **Distribution:** Use distributions
+                    that best fit each tenor or enforce normal.
+                    
                     Future rates are estimated using a Monte Carlo simulation,
-                    where random rates (or mapped rates)
-                    
-                    are drawn from the distributions that best fits each tenor.
-                    The user may also choose which finance model
-                    
-                    to use to compute forward rates, noting that the correlation 
-                    between tenors is taken into account.
-                    
-                    Finally, the user may enable the principal component analysis
-                    (PCA) option to reduce the dimensionality of the data.
+                    where random rates (or mapped rates) are, by default, drawn
+                    from the distributions that best fits each tenor. The
+                    correlation between tenors is taken into account. Using
+                    data transformations will typically improve the model and
+                    enabling PCA will produce nearly identical results.
 
                     &nbsp;&nbsp;&nbsp;&nbsp;
                     

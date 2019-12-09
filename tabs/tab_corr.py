@@ -32,7 +32,13 @@ tab_corr_layout = html.Div([
                      for i in ['1', '25', '1 & 25']],
             value='1',
         ),
-        
+
+        html.Button(
+                id='tab-corr-pca',
+                children='Enable PCA',
+                n_clicks=0,
+                style={'width': '150px', 'marginLeft': '5em'}),   
+                        
         ], style={'display': 'flex', 'marginTop': '1.5em'}), 
         
     html.Div([dcc.Graph(id='tab-corr-graph'),], className='container'),

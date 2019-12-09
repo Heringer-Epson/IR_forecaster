@@ -16,12 +16,10 @@ tab_IRt_layout = html.Div([
             style={'width': '100px', 'marginLeft': '.5em'},
         ),       
        
-        html.H6('Tenor:', style={'marginLeft': '3em'}),
+        html.H6('Axis:', style={'marginLeft': '3em'}),
         dcc.Dropdown(
-            id='tab-IRt-tenor-dropdown',
-            options=[{'label': i + ' month', 'value': i}
-                     for i in ['1', '2', '3', '6', '12']],
-            value='1',
+            id='tab-IRt-axis-dropdown',
+            value=0,
             style={'width': '150px', 'marginLeft': '.5em'},
         ),
 
@@ -32,7 +30,13 @@ tab_IRt_layout = html.Div([
             value='Diff.',
             style={'width': '150px', 'marginLeft': '.5em'},
         ),        
-        
+
+        html.Button(
+                id='tab-IRt-pca',
+                children='Enable PCA',
+                n_clicks=0,
+                style={'width': '150px', 'marginLeft': '5em'}),         
+                
         ], style={'display': 'flex', 'marginTop': '1.5em'}), 
 
     dcc.Graph(id='tab-IRt-graph'),

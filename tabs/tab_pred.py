@@ -19,9 +19,6 @@ tab_pred_layout = html.Div([
         html.H6('Transf.:', style={'marginLeft': '3em'}),
         dcc.Dropdown(
             id='tab-pred-transf-dropdown',
-            options=[{'label': i, 'value': i} for i in ['Diff.', 'Log ratio', 'Raw']],
-            #value='Raw',
-            value='Diff.',
             style={'width': '150px', 'marginLeft': '.5em'},
         ),        
 
@@ -31,6 +28,12 @@ tab_pred_layout = html.Div([
             options=[{'label': '{} day'.format(str(i)), 'value': i} for i in ['1', '25']],
             value='1',
         ),
+
+        html.Button(
+                id='tab-pred-pca',
+                children='Enable PCA',
+                n_clicks=0,
+                style={'width': '150px', 'marginLeft': '5em'}),   
         
         ], style={'display': 'flex', 'marginTop': '1.5em'}), 
 
@@ -39,7 +42,7 @@ tab_pred_layout = html.Div([
         dcc.Dropdown(
             id='tab-pred-model-dropdown',
             options=[{'label': i, 'value': i} for i in ['Vasicek', 'Brownian']],
-            value='Brownian',
+            value='Vasicek',
             style={'width': '150px', 'marginLeft': '.5em'},
         ),       
        
@@ -51,7 +54,6 @@ tab_pred_layout = html.Div([
             style={'width': '150px', 'marginLeft': '.5em'},
         ),
 
-        #Add button to recalculate paths.
         ], style={'display': 'flex', 'marginTop': '1.5em'}), 
 
     html.Div([

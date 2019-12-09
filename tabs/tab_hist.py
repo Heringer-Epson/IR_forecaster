@@ -16,12 +16,10 @@ tab_hist_layout = html.Div([
             style={'width': '100px', 'marginLeft': '.5em'},
         ),       
        
-        html.H6('Tenor:', style={'marginLeft': '3em'}),
+        html.H6('Axis:', style={'marginLeft': '3em'}),
         dcc.Dropdown(
-            id='tab-hist-tenor-dropdown',
-            options=[{'label': i + ' month', 'value': i}
-                     for i in ['1', '2', '3', '6', '12']],
-            value='1',
+            id='tab-hist-axis-dropdown',
+            value=0,
             style={'width': '150px', 'marginLeft': '.5em'},
         ),
 
@@ -40,6 +38,13 @@ tab_hist_layout = html.Div([
             value='1',
             #labelStyle={'display': 'inline-block'}
         ),
+
+        html.Button(
+                id='tab-hist-pca',
+                children='Enable PCA',
+                n_clicks=0,
+                style={'width': '150px', 'marginLeft': '5em'}),   
+        
         ], style={'display': 'flex', 'marginTop': '1.5em'}), 
 
     dcc.Graph(id='tab-hist-graph'),
