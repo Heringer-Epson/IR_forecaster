@@ -28,9 +28,6 @@ tab_sim_layout = html.Div([
         html.H6('Transf.:', style={'marginLeft': '3em'}),
         dcc.Dropdown(
             id='tab-sim-transf-dropdown',
-            options=[{'label': i, 'value': i} for i in ['Diff.', 'Log ratio', 'Raw']],
-            #value='Raw',
-            value='Diff.',
             style={'width': '150px', 'marginLeft': '.5em'},
         ),        
 

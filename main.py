@@ -181,11 +181,11 @@ def tab_IRt_graph(curr, axis, transf, date_range, n_clicks):
 
     if n_clicks % 2 == 1:
         pca_1 = Compute_Pca(merged_df_1.values)#.run()
-        transformed_matrix_1 = np.transpose(pca_1.components)
+        transformed_matrix_1 = np.transpose(pca_1.pca_matrix)
         y_1 = transformed_matrix_1[axis]
 
         pca_25 = Compute_Pca(merged_df_25.values)#.run()
-        transformed_matrix_25 = np.transpose(pca_25.components)
+        transformed_matrix_25 = np.transpose(pca_25.pca_matrix)
         y_25 = transformed_matrix_25[axis]    
     
     else:
@@ -288,11 +288,11 @@ def tab_hist_graph(curr, transf, date_range, n_clicks):
     
     if n_clicks % 2 == 1:
         pca_1 = Compute_Pca(merged_df_1.values)#.run()
-        transformed_matrix_1 = np.transpose(pca_1.components)
+        transformed_matrix_1 = np.transpose(pca_1.pca_matrix)
         aux_1 = transformed_matrix_1
 
         pca_25 = Compute_Pca(merged_df_25.values)#.run()
-        transformed_matrix_25 = np.transpose(pca_25.components)
+        transformed_matrix_25 = np.transpose(pca_25.pca_matrix)
         aux_25 = transformed_matrix_25
 
         x = Inp_Pars.PCA
@@ -693,6 +693,7 @@ def set_distr_options(n_clicks):
         return 'Enable PCA'
 
 #=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-TAB: Sim-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
 @dash_app.callback(Output('tab-sim-graph', 'figure'),
               [Input('tab-sim-curr-dropdown', 'value'),
                Input('tab-sim-tenor-dropdown', 'value'),
@@ -756,6 +757,21 @@ def set_distr_options(transf):
     [Input('tab-sim-distr-radio', 'options')])
 def set_distr_value(distr_options):
     return distr_options[0]['value']
+
+@dash_app.callback(
+    Output('tab-sim-transf-dropdown', 'options'),
+    [Input('tab-sim-model-dropdown', 'value')])
+def set_diff_options(model):
+    if model == 'Brownian':
+        return [{'label': i, 'value': i} for i in ['Raw']]
+    elif model == 'Vasicek':
+        return [{'label': i, 'value': i} for i in ['Diff.', 'Log ratio', 'Raw']]
+
+@dash_app.callback(
+    Output('tab-sim-transf-dropdown', 'value'),
+    [Input('tab-sim-model-dropdown', 'value')])
+def set_diff_value(model):
+    return 'Raw'
 
 @dash_app.callback(Output('tab-sim-slider', 'children'),
               [Input('tab-sim-curr-dropdown', 'value'),
@@ -896,6 +912,21 @@ def set_distr_options(n_clicks):
               [Input('tab-pred-pca', 'n_clicks')])
 def tab_pred_axisv_dropdown(n_clicks):
     return 0
+
+@dash_app.callback(
+    Output('tab-pred-transf-dropdown', 'options'),
+    [Input('tab-pred-model-dropdown', 'value')])
+def set_diff_options(model):
+    if model == 'Brownian':
+        return [{'label': i, 'value': i} for i in ['Raw']]
+    elif model == 'Vasicek':
+        return [{'label': i, 'value': i} for i in ['Diff.', 'Log ratio', 'Raw']]
+
+@dash_app.callback(
+    Output('tab-pred-transf-dropdown', 'value'),
+    [Input('tab-pred-model-dropdown', 'value')])
+def set_diff_value(model):
+    return 'Raw'
 
 @dash_app.callback(Output('tab-pred-slider', 'children'),
               [Input('tab-pred-curr-dropdown', 'value'),
