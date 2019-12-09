@@ -25,11 +25,11 @@ from src.compute_PCA import Compute_Pca
 from tabs import tab_about
 from tabs import tab_IR
 from tabs import tab_IRt
+from tabs import tab_std
+from tabs import tab_pca
 from tabs import tab_hist
 from tabs import tab_term
-from tabs import tab_std
 from tabs import tab_corr
-from tabs import tab_pca
 from tabs import tab_sim
 from tabs import tab_pred
 
@@ -39,11 +39,11 @@ dash_app.layout = html.Div([
         dcc.Tab(label='About', value='tab-about'),
         dcc.Tab(label='Rates', value='tab-IR'),
         dcc.Tab(label='Transf. Rates', value='tab-IR_t'),
+        dcc.Tab(label='Standard Dev.', value='tab-std'),
+        dcc.Tab(label='PCA', value='tab-pca'),
         dcc.Tab(label='Histogram', value='tab-hist'),
         dcc.Tab(label='Term Structure', value='tab-term'),
-        dcc.Tab(label='Standard Dev.', value='tab-std'),
         dcc.Tab(label='Correlation Matrix', value='tab-corr'),
-        dcc.Tab(label='PCA', value='tab-pca'),
         dcc.Tab(label='Simulate Rates', value='tab-sim'),
         dcc.Tab(label='Term Prediction', value='tab-pred'),
     ]),
@@ -59,16 +59,16 @@ def render_content(tab):
         return tab_IR.tab_IR_layout
     elif tab == 'tab-IR_t':
         return tab_IRt.tab_IRt_layout
+    elif tab == 'tab-std':
+        return tab_std.tab_std_layout
+    elif tab == 'tab-pca':
+        return tab_pca.tab_pca_layout
     elif tab == 'tab-hist':
         return tab_hist.tab_hist_layout
     elif tab == 'tab-term':
         return tab_term.tab_term_layout
-    elif tab == 'tab-std':
-        return tab_std.tab_std_layout
     elif tab == 'tab-corr':
         return tab_corr.tab_corr_layout
-    elif tab == 'tab-pca':
-        return tab_pca.tab_pca_layout
     elif tab == 'tab-sim':
         return tab_sim.tab_sim_layout
     elif tab == 'tab-pred':
@@ -263,6 +263,159 @@ def tab_IRt_axis_dropdown(n_clicks):
               [Input('tab-IRt-pca', 'n_clicks')])
 def tab_IRt_axisv_dropdown(n_clicks):
     return 0
+
+#=-=--=-=-=-=-=-=-=-=-=-=-=-=TAB: Standard Deviation-=-=--=-=-=-=-=-=-=-=-=-=-=
+
+@dash_app.callback(Output('tab-std-graph', 'figure'),
+              [Input('tab-std-curr-dropdown', 'value'),
+               Input('tab-std-transf-dropdown', 'value'),
+               Input('std-year-slider', 'value'),
+               Input('tab-std-pca', 'n_clicks')])
+def tab_hist_graph(curr, transf, date_range, n_clicks):
+    
+    application = utils.transf2application[transf]
+    IR_key = utils.transf2IR[transf]
+    t_min, t_max = utils.format_date(date_range)
+
+    M = Preproc_Data(
+      curr=curr, t_ival=[t_min, t_max], application=application).run()
+    tenors = M['tenor'] #Using the default tenors. i.e. [1,2,3,6,12]
+    
+    merged_df_1 = utils.merge_dataframes(
+      [M], [curr], Inp_Pars.tenor, ['1'], IR_key)
+    merged_df_25 = utils.merge_dataframes(
+      [M], [curr], Inp_Pars.tenor, ['25'], IR_key)
+    
+    if n_clicks % 2 == 1:
+        pca_1 = Compute_Pca(merged_df_1.values)#.run()
+        transformed_matrix_1 = np.transpose(pca_1.components)
+        aux_1 = transformed_matrix_1
+
+        pca_25 = Compute_Pca(merged_df_25.values)#.run()
+        transformed_matrix_25 = np.transpose(pca_25.components)
+        aux_25 = transformed_matrix_25
+
+        x = Inp_Pars.PCA
+        y = [np.std(aux_25[i]) / np.std(aux_1[i]) for i in range(len(x))]
+        x_label = 'Principal Component'
+
+  
+    else:
+        aux_1 = np.transpose(merged_df_1.values)
+        aux_25 = np.transpose(merged_df_25.values)
+        x = Inp_Pars.tenor
+        y = [np.std(aux_25[i]) / np.std(aux_1[i]) for i in range(len(x))]
+        x_label = 'Maturity [months]'
+    
+    traces = []
+    traces.append(go.Scattergl(
+        x=x,
+        y=y,
+        mode='lines+markers',
+        opacity=1.,
+        line=dict(color='black', width=4.),
+        marker=dict(color='black', size=10),
+        showlegend=False
+    ))
+
+    return {
+        'data': traces,
+        'layout': dict(
+            xaxis={'title': x_label,},
+            yaxis={'title': r'std(T=25d) / std(T=1d)',},
+            hovermode='closest',
+        )
+    }
+
+@dash_app.callback(Output('tab-std-slider', 'children'),
+              [Input('tab-std-curr-dropdown', 'value')])
+def tab_term_slider(curr):
+    t_min, t_max, t_list = utils.compute_t_range(currtag=curr)
+    return html.Div(
+        dcc.RangeSlider(
+            id='std-year-slider',
+            min=t_min,
+            max=t_max,
+            value=[2010, 2015],
+            marks={year: str(year) for year in t_list},
+            step=1./12.
+        )
+    )  
+
+@dash_app.callback(Output('tab-std-slider-container', 'children'),
+              [Input('std-year-slider', 'value')])
+def tab_term_slider_container(date_range):
+    t_min, t_max = utils.format_date(date_range)
+    return 'Date range is "{}" -- "{}"'.format(t_min, t_max)
+
+@dash_app.callback(
+    Output('tab-std-pca', 'children'),
+    [Input('tab-std-pca', 'n_clicks')])
+def set_distr_options(n_clicks):
+    if n_clicks % 2 == 1:
+        return 'Disable PCA'
+    else:
+        return 'Enable PCA'
+
+#=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=TAB: PCA-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+@dash_app.callback(Output('tab-pca-graph', 'figure'),
+              [Input('tab-pca-curr-dropdown', 'value'),
+               Input('tab-pca-transf-dropdown', 'value'),
+               Input('tab-pca-incr-radio', 'value'),
+               Input('pca-year-slider', 'value')])
+def tab_pca_graph(curr, transf, incr, date_range):   
+
+    application = utils.transf2application[transf]
+    IR_key = utils.transf2IR[transf]
+    t_min, t_max = utils.format_date(date_range)
+
+    M = Preproc_Data(curr=curr, incr=[int(incr)], t_ival=[t_min, t_max],
+                     application=application).run()
+    
+    merged_df = utils.merge_dataframes([M], [curr], M['tenor'], [incr], IR_key)    
+    n_pca_array, exp_var = Explained_Var(merged_df.values).run()
+    
+    traces = []
+    traces.append(go.Scattergl(
+        x=n_pca_array,
+        y=exp_var,
+        mode='lines+markers',
+        opacity=1.,
+        line=dict(color='black', width=3.),
+        marker=dict(color='black', size=10),
+    ))
+
+    return {
+        'data': traces,
+        'layout': dict(
+            xaxis={'title': 'Number of Principal Components',},
+            yaxis={'title': 'Explained Variance [%]',},
+            hovermode='closest',
+        )
+    }
+
+@dash_app.callback(Output('tab-pca-slider', 'children'),
+              [Input('tab-pca-curr-dropdown', 'value'),
+               Input('tab-pca-incr-radio', 'value')])
+def tab_corr_slider(currtag, incrtag):
+    t_min, t_max, t_list = utils.compute_t_range(currtag, incrtag)
+    return html.Div(
+        dcc.RangeSlider(
+            id='pca-year-slider',
+            min=t_min,
+            max=t_max,
+            value=[2010, 2015],
+            marks={year: str(year) for year in t_list},
+            step=1./12.
+        )
+    )  
+
+@dash_app.callback(Output('tab-pca-slider-container', 'children'),
+              [Input('pca-year-slider', 'value')])
+def tab_IR_t_slider_container(date_range):
+    t_min, t_max = utils.format_date(date_range)
+    return 'Date range is "{}" -- "{}"'.format(t_min, t_max)
                 
 #=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=TAB: hist-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
@@ -457,99 +610,6 @@ def tab_term_slider_container(date_range):
     t_min, t_max = utils.format_date(date_range)
     return 'Date range is "{}" -- "{}"'.format(t_min, t_max)
 
-#=-=--=-=-=-=-=-=-=-=-=-=-=-=TAB: Standard Deviation-=-=--=-=-=-=-=-=-=-=-=-=-=
-
-@dash_app.callback(Output('tab-std-graph', 'figure'),
-              [Input('tab-std-curr-dropdown', 'value'),
-               Input('tab-std-transf-dropdown', 'value'),
-               Input('std-year-slider', 'value'),
-               Input('tab-std-pca', 'n_clicks')])
-def tab_hist_graph(curr, transf, date_range, n_clicks):
-    
-    application = utils.transf2application[transf]
-    IR_key = utils.transf2IR[transf]
-    t_min, t_max = utils.format_date(date_range)
-
-    M = Preproc_Data(
-      curr=curr, t_ival=[t_min, t_max], application=application).run()
-    tenors = M['tenor'] #Using the default tenors. i.e. [1,2,3,6,12]
-    
-    merged_df_1 = utils.merge_dataframes(
-      [M], [curr], Inp_Pars.tenor, ['1'], IR_key)
-    merged_df_25 = utils.merge_dataframes(
-      [M], [curr], Inp_Pars.tenor, ['25'], IR_key)
-    
-    if n_clicks % 2 == 1:
-        pca_1 = Compute_Pca(merged_df_1.values)#.run()
-        transformed_matrix_1 = np.transpose(pca_1.components)
-        aux_1 = transformed_matrix_1
-
-        pca_25 = Compute_Pca(merged_df_25.values)#.run()
-        transformed_matrix_25 = np.transpose(pca_25.components)
-        aux_25 = transformed_matrix_25
-
-        x = Inp_Pars.PCA
-        y = [np.std(aux_25[i]) / np.std(aux_1[i]) for i in range(len(x))]
-        x_label = 'Principal Component'
-
-  
-    else:
-        aux_1 = np.transpose(merged_df_1.values)
-        aux_25 = np.transpose(merged_df_25.values)
-        x = Inp_Pars.tenor
-        y = [np.std(aux_25[i]) / np.std(aux_1[i]) for i in range(len(x))]
-        x_label = 'Maturity [months]'
-    
-    traces = []
-    traces.append(go.Scattergl(
-        x=x,
-        y=y,
-        mode='lines+markers',
-        opacity=1.,
-        line=dict(color='black', width=4.),
-        marker=dict(color='black', size=10),
-        showlegend=False
-    ))
-
-    return {
-        'data': traces,
-        'layout': dict(
-            xaxis={'title': x_label,},
-            yaxis={'title': r'std(T=25d) / std(T=1d)',},
-            hovermode='closest',
-        )
-    }
-
-@dash_app.callback(Output('tab-std-slider', 'children'),
-              [Input('tab-std-curr-dropdown', 'value')])
-def tab_term_slider(curr):
-    t_min, t_max, t_list = utils.compute_t_range(currtag=curr)
-    return html.Div(
-        dcc.RangeSlider(
-            id='std-year-slider',
-            min=t_min,
-            max=t_max,
-            value=[2010, 2015],
-            marks={year: str(year) for year in t_list},
-            step=1./12.
-        )
-    )  
-
-@dash_app.callback(Output('tab-std-slider-container', 'children'),
-              [Input('std-year-slider', 'value')])
-def tab_term_slider_container(date_range):
-    t_min, t_max = utils.format_date(date_range)
-    return 'Date range is "{}" -- "{}"'.format(t_min, t_max)
-
-@dash_app.callback(
-    Output('tab-std-pca', 'children'),
-    [Input('tab-std-pca', 'n_clicks')])
-def set_distr_options(n_clicks):
-    if n_clicks % 2 == 1:
-        return 'Disable PCA'
-    else:
-        return 'Enable PCA'
-
 #=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=TAB: corr-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 @dash_app.callback(Output('tab-corr-graph', 'figure'),
@@ -631,66 +691,6 @@ def set_distr_options(n_clicks):
         return 'Disable PCA'
     else:
         return 'Enable PCA'
-
-#=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=TAB: PCA-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-
-@dash_app.callback(Output('tab-pca-graph', 'figure'),
-              [Input('tab-pca-curr-dropdown', 'value'),
-               Input('tab-pca-transf-dropdown', 'value'),
-               Input('tab-pca-incr-radio', 'value'),
-               Input('pca-year-slider', 'value')])
-def tab_pca_graph(curr, transf, incr, date_range):   
-
-    application = utils.transf2application[transf]
-    IR_key = utils.transf2IR[transf]
-    t_min, t_max = utils.format_date(date_range)
-
-    M = Preproc_Data(curr=curr, incr=[int(incr)], t_ival=[t_min, t_max],
-                     application=application).run()
-    
-    merged_df = utils.merge_dataframes([M], [curr], M['tenor'], [incr], IR_key)    
-    n_pca_array, exp_var = Explained_Var(merged_df.values).run()
-    
-    traces = []
-    traces.append(go.Scattergl(
-        x=n_pca_array,
-        y=exp_var,
-        mode='lines+markers',
-        opacity=1.,
-        line=dict(color='black', width=3.),
-        marker=dict(color='black', size=10),
-    ))
-
-    return {
-        'data': traces,
-        'layout': dict(
-            xaxis={'title': 'Number of Principal Components',},
-            yaxis={'title': 'Explained Variance [%]',},
-            hovermode='closest',
-        )
-    }
-
-@dash_app.callback(Output('tab-pca-slider', 'children'),
-              [Input('tab-pca-curr-dropdown', 'value'),
-               Input('tab-pca-incr-radio', 'value')])
-def tab_corr_slider(currtag, incrtag):
-    t_min, t_max, t_list = utils.compute_t_range(currtag, incrtag)
-    return html.Div(
-        dcc.RangeSlider(
-            id='pca-year-slider',
-            min=t_min,
-            max=t_max,
-            value=[2010, 2015],
-            marks={year: str(year) for year in t_list},
-            step=1./12.
-        )
-    )  
-
-@dash_app.callback(Output('tab-pca-slider-container', 'children'),
-              [Input('pca-year-slider', 'value')])
-def tab_IR_t_slider_container(date_range):
-    t_min, t_max = utils.format_date(date_range)
-    return 'Date range is "{}" -- "{}"'.format(t_min, t_max)
 
 #=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-TAB: Sim-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 @dash_app.callback(Output('tab-sim-graph', 'figure'),
@@ -805,7 +805,6 @@ def tab_calculate_term(curr, transf, incr, date_range, model, distr, n_clicks):
 
     if n_clicks % 2 == 1:
         use_pca = True
-        #matrix = np.transpose(pca.components)
     else:
         use_pca = False
 
