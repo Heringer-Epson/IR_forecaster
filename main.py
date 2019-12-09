@@ -89,7 +89,7 @@ def tab_IR_graph(curr, axis, date_range, n_clicks):
     merged_df = utils.merge_dataframes([M], [curr], Inp_Pars.tenor, ['1'], 'ir')
     if n_clicks % 2 == 1:
         pca = Compute_Pca(merged_df.values)#.run()
-        transformed_matrix = np.transpose(pca.components)
+        transformed_matrix = np.transpose(pca.pca_matrix)
         y = transformed_matrix[axis]
     else:
         y = np.transpose(merged_df.values)[axis]
@@ -439,7 +439,7 @@ def tab_hist_graph(curr, axis, transf, incr, date_range, n_clicks):
       [M], [curr], Inp_Pars.tenor, [int(incr)], IR_key)
     if n_clicks % 2 == 1:
         pca = Compute_Pca(merged_df.values)#.run()
-        transformed_matrix = np.transpose(pca.components)
+        transformed_matrix = np.transpose(pca.pca_matrix)
         y = transformed_matrix[axis]
     else:
         y = np.transpose(merged_df.values)[axis]
@@ -637,7 +637,7 @@ def tab_corr_graph(currtag, transf, incrtag, date_range, n_clicks):
     if n_clicks % 2 == 1:
         pca = Compute_Pca(merged_df.values)#.run()
         columns = ['PCA 1', 'PCA 2', 'PCA 3'] #By default, always use 3 PC's.
-        aux_df = pd.DataFrame(pca.components)
+        aux_df = pd.DataFrame(pca.pca_matrix)
         z = aux_df.corr()
     else:
         columns = merged_df.columns
