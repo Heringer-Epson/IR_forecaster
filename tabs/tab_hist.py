@@ -4,7 +4,7 @@ import dash_core_components as dcc
 tab_hist_layout = html.Div([
     html.Div([
         html.H6(
-            'Histogram of Intrabank Rates',
+            'Histogram of Rates',
             style={'marginLeft': '1.5em', 'font-weight':'bold'}
         ),
      
