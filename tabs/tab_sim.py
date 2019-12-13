@@ -5,10 +5,10 @@ tab_sim_layout = html.Div([
     html.Div([
         html.H6(
             'Simulate Future Rates',
-            style={'marginLeft': '3em', 'font-weight':'bold'}
+            style={'marginLeft': '1.5em', 'font-weight':'bold'}
         ),
         
-        html.H6('Currency:', style={'marginLeft': '3.0em', }),
+        html.H6('Currency:', style={'marginLeft': '1.5em',}),
         dcc.Dropdown(
             id='tab-sim-curr-dropdown',
             options=[{'label': i, 'value': i} for i in ['USD', 'CAD']],
@@ -16,7 +16,7 @@ tab_sim_layout = html.Div([
             style={'width': '100px', 'marginLeft': '.5em'},
         ),       
        
-        html.H6('Tenor:', style={'marginLeft': '3em'}),
+        html.H6('Tenor:', style={'marginLeft': '1.5em'}),
         dcc.Dropdown(
             id='tab-sim-tenor-dropdown',
             options=[{'label': i + ' month', 'value': i}
@@ -25,13 +25,13 @@ tab_sim_layout = html.Div([
             style={'width': '150px', 'marginLeft': '.5em'},
         ),
 
-        html.H6('Transf.:', style={'marginLeft': '3em'}),
+        html.H6('Transf.:', style={'marginLeft': '1.5em'}),
         dcc.Dropdown(
             id='tab-sim-transf-dropdown',
-            style={'width': '150px', 'marginLeft': '.5em'},
+            style={'width': '120px', 'marginLeft': '.5em'},
         ),        
 
-        html.H6('Over:', style={'marginLeft': '3em'}),
+        html.H6('Over:', style={'marginLeft': '1.5em'}),
         dcc.RadioItems(
             id='tab-sim-incr-radio',
             options=[{'label': '{} day'.format(str(i)), 'value': i} for i in ['1', '25']],
@@ -40,22 +40,22 @@ tab_sim_layout = html.Div([
         ], style={'display': 'flex', 'marginTop': '1.5em'}), 
 
     html.Div([
-        html.H6('Model:', style={'marginLeft': '17.5em', }),
+        html.H6('Model:', style={'marginLeft': '1.5em', }),
         dcc.Dropdown(
             id='tab-sim-model-dropdown',
             options=[{'label': i, 'value': i} for i in ['Vasicek', 'Brownian']],
             #value='Brownian',
             value='Vasicek',
-            style={'width': '150px', 'marginLeft': '.5em'},
+            style={'width': '140px', 'marginLeft': '.5em'},
         ),       
        
-        html.H6('Distribution:', style={'marginLeft': '3em'}),
+        html.H6('Distribution:', style={'marginLeft': '1.5em'}),
         dcc.RadioItems(
             id='tab-sim-distr-radio',
-            style={'width': '150px', 'marginLeft': '.5em'},
+            style={'width': '75px', 'marginLeft': '.5em'},
         ),
 
-        html.H6('# Days:', style={'marginLeft': '3em'}),
+        html.H6('# Days:', style={'marginLeft': '1.5em'}),
         dcc.Dropdown(
             id='tab-sim-ndays-dropdown',
             options=[{'label': str(i), 'value': i} for i in [50, 100, 250]],
@@ -63,7 +63,7 @@ tab_sim_layout = html.Div([
             style={'width': '100px', 'marginLeft': '.5em'},
         ),  
 
-        html.H6('# Paths:', style={'marginLeft': '3em'}),
+        html.H6('# Paths:', style={'marginLeft': '1.5em'}),
         dcc.Dropdown(
             id='tab-sim-npaths-dropdown',
             options=[{'label': str(i), 'value': i} for i in [5, 10, 50, 100, 500]],
@@ -75,7 +75,7 @@ tab_sim_layout = html.Div([
                 id='tab-sim-button',
                 n_clicks=0,
                 children='Re-calculate',
-                style={'width': '150px', 'marginLeft': '5em'}),     
+                style={'width': '180px', 'marginLeft': '3em'}),     
 
         #Add button to recalculate paths.
         ], style={'display': 'flex', 'marginTop': '1.5em'}), 

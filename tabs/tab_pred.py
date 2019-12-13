@@ -5,10 +5,10 @@ tab_pred_layout = html.Div([
     html.Div([
         html.H6(
             'Predict Term Structure',
-            style={'marginLeft': '3em', 'font-weight':'bold'}
+            style={'marginLeft': '1.5em', 'font-weight':'bold'}
         ),
        
-        html.H6('Currency:', style={'marginLeft': '3.0em', }),
+        html.H6('Currency:', style={'marginLeft': '1.5em',}),
         dcc.Dropdown(
             id='tab-pred-curr-dropdown',
             options=[{'label': i, 'value': i} for i in ['USD', 'CAD']],
@@ -16,13 +16,13 @@ tab_pred_layout = html.Div([
             style={'width': '100px', 'marginLeft': '.5em'},
         ),       
        
-        html.H6('Transf.:', style={'marginLeft': '3em'}),
+        html.H6('Transf.:', style={'marginLeft': '1.5em'}),
         dcc.Dropdown(
             id='tab-pred-transf-dropdown',
-            style={'width': '150px', 'marginLeft': '.5em'},
+            style={'width': '120px', 'marginLeft': '.5em'},
         ),        
 
-        html.H6('Over:', style={'marginLeft': '3em'}),
+        html.H6('Over:', style={'marginLeft': '1.5em'}),
         dcc.RadioItems(
             id='tab-pred-incr-radio',
             options=[{'label': '{} day'.format(str(i)), 'value': i} for i in ['1', '25']],
@@ -33,12 +33,12 @@ tab_pred_layout = html.Div([
                 id='tab-pred-pca',
                 children='Enable PCA',
                 n_clicks=0,
-                style={'width': '150px', 'marginLeft': '5em'}),   
+                style={'width': '140px', 'marginLeft': '3em'}),   
         
         ], style={'display': 'flex', 'marginTop': '1.5em'}), 
 
     html.Div([
-        html.H6('Model:', style={'marginLeft': '17.5em', }),
+        html.H6('Model:', style={'marginLeft': '1.5em', }),
         dcc.Dropdown(
             id='tab-pred-model-dropdown',
             options=[{'label': i, 'value': i} for i in ['Vasicek', 'Brownian']],
@@ -46,12 +46,12 @@ tab_pred_layout = html.Div([
             style={'width': '150px', 'marginLeft': '.5em'},
         ),       
        
-        html.H6('Distribution:', style={'marginLeft': '3em'}),
+        html.H6('Distribution:', style={'marginLeft': '1.5em'}),
         dcc.RadioItems(
             id='tab-pred-distr-radio',
             options=[{'label': i, 'value': i} for i in ['Best fit', 'Normal']],
             value='Best fit',
-            style={'width': '150px', 'marginLeft': '.5em'},
+            style={'width': '75px', 'marginLeft': '.5em'},
         ),
 
         ], style={'display': 'flex', 'marginTop': '1.5em'}), 

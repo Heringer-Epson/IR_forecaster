@@ -5,10 +5,10 @@ tab_term_layout = html.Div([
     html.Div([
         html.H6(
             'Averaged Term Structure',
-            style={'marginLeft': '3em', 'font-weight':'bold'}
+            style={'marginLeft': '1.5em', 'font-weight':'bold'}
         ),
        
-        html.H6('Currency:', style={'marginLeft': '3.0em', }),
+        html.H6('Currency:', style={'marginLeft': '1.5em', }),
         dcc.Dropdown(
             id='tab-term-curr-dropdown',
             options=[{'label': i, 'value': i} for i in ['USD', 'CAD']],
@@ -16,7 +16,7 @@ tab_term_layout = html.Div([
             style={'width': '100px', 'marginLeft': '.5em'},
         ),       
 
-        html.H6('Over:', style={'marginLeft': '3em'}),
+        html.H6('Over:', style={'marginLeft': '1.5em'}),
         dcc.RadioItems(
             id='tab-term-incr-radio',
             options=[{'label': '{} day'.format(i), 'value': i} for i in ['1', '25']],

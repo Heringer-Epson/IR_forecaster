@@ -6,10 +6,10 @@ tab_IR_layout = html.Div([
     html.Div([
         html.H6(
             'Intrabank Rates from LIBOR',
-            style={'marginLeft': '3em', 'font-weight':'bold'}
+            style={'marginLeft': '1.5em', 'font-weight':'bold'}
         ),
      
-        html.H6('Currency:', style={'marginLeft': '3.0em', }),
+        html.H6('Currency:', style={'marginLeft': '1.5em', }),
         dcc.Dropdown(
             id='tab-IR-curr-dropdown',
             options=[{'label': i, 'value': i} for i in Inp_Pars.curr],
@@ -17,7 +17,7 @@ tab_IR_layout = html.Div([
             style={'width': '100px', 'marginLeft': '.5em'},
         ),       
        
-        html.H6('Axis:', style={'marginLeft': '3em'}),
+        html.H6('Axis:', style={'marginLeft': '1.5em'}),
         dcc.Dropdown(
             id='tab-IR-axis-dropdown',
             value=0,
@@ -28,7 +28,7 @@ tab_IR_layout = html.Div([
                 id='tab-IR-pca',
                 children='Enable PCA',
                 n_clicks=0,
-                style={'width': '150px', 'marginLeft': '5em'}),         
+                style={'width': '140px', 'marginLeft': '3em'}),         
         
         ], style={'display': 'flex', 'marginTop': '1.5em'}), 
 

@@ -5,10 +5,10 @@ tab_std_layout = html.Div([
     html.Div([
         html.H6(
             'Averaged Term Structure',
-            style={'marginLeft': '3em', 'font-weight':'bold'}
+            style={'marginLeft': '1.5em', 'font-weight':'bold'}
         ),
        
-        html.H6('Currency:', style={'marginLeft': '3.0em', }),
+        html.H6('Currency:', style={'marginLeft': '1.5em',}),
         dcc.Dropdown(
             id='tab-std-curr-dropdown',
             options=[{'label': i, 'value': i} for i in ['USD', 'CAD']],
@@ -16,19 +16,19 @@ tab_std_layout = html.Div([
             style={'width': '100px', 'marginLeft': '.5em'},
         ),       
 
-        html.H6('Transf.:', style={'marginLeft': '3em'}),
+        html.H6('Transf.:', style={'marginLeft': '1.5em'}),
         dcc.Dropdown(
             id='tab-std-transf-dropdown',
             options=[{'label': i, 'value': i} for i in ['Diff.', 'Log ratio', 'Raw']],
             value='Diff.',
-            style={'width': '150px', 'marginLeft': '.5em'},
+            style={'width': '120px', 'marginLeft': '.5em'},
         ),    
 
         html.Button(
                 id='tab-std-pca',
                 children='Enable PCA',
                 n_clicks=0,
-                style={'width': '150px', 'marginLeft': '5em'}),   
+                style={'width': '140px', 'marginLeft': '3em'}),   
         
         ], style={'display': 'flex', 'marginTop': '1.5em'}), 
     
