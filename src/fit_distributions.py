@@ -35,11 +35,12 @@ class Fit_Distr(object):
         self.bins = (bins[1:] + bins[:-1])/2.
     
     def make_pdf_list(self):
-        self.pdfs = ['norm', 'dweibull', 'expon', 'logistic', 'laplace',
-                     'powerlaw', 'uniform']
+        self.pdfs = [
+          'cauchy',  'dgamma', 'dweibull', 'exponnorm', 'genlogistic',
+          'gennorm', 'gumbel_r', 'laplace', 'nct', 'norminvgauss', 'skewnorm', 't']
         if all(self.y > 0.):
-            self.pdfs += ['gamma', 'lognorm', 'exponweib',
-                          'halflogistic', 'halfnorm']
+            self.pdfs += [
+              'exponweib', 'gilbrat', 'rayleigh', 'rice', 'recipinvgauss', 'wald']
 
     def make_fits(self):
         #Based on example from:
