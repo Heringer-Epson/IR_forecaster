@@ -954,5 +954,5 @@ def tab_IR_t_slider_container(date_range):
 #=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-END: TABs-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-
                                 
 if __name__ == '__main__':
-    dash_app.run_server(host='0.0.0.0', port=8080, debug=False)
-    #dash_app.run_server(debug=True)
+    #dash_app.run_server(host='0.0.0.0', port=8080, debug=False)
+    dash_app.run_server(debug=True)

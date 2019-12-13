@@ -6,10 +6,10 @@ tab_corr_layout = html.Div([
     html.Div([
         html.H6(
             'Correlation Matrix',
-            style={'marginLeft': '3em', 'font-weight':'bold'}
+            style={'marginLeft': '1.5em', 'font-weight':'bold'}
         ),
       
-        html.H6('Currency:', style={'marginLeft': '3.0em', }),
+        html.H6('Currency:', style={'marginLeft': '1.5em',}),
         dcc.Dropdown(
             id='tab-corr-curr-dropdown',
             options=[{'label': i, 'value': i} for i in ['USD', 'CAD', 'USD & CAD']],
@@ -17,15 +17,15 @@ tab_corr_layout = html.Div([
             style={'width': '100px', 'marginLeft': '.5em'},
         ),       
        
-        html.H6('Transf.:', style={'marginLeft': '3em'}),
+        html.H6('Transf.:', style={'marginLeft': '1.5em'}),
         dcc.Dropdown(
             id='tab-corr-transf-dropdown',
             options=[{'label': i, 'value': i} for i in ['Diff.', 'Log ratio', 'Raw']],
             value='Raw',
-            style={'width': '150px', 'marginLeft': '.5em'},
+            style={'width': '120px', 'marginLeft': '.5em'},
         ),        
 
-        html.H6('Over:', style={'marginLeft': '3em'}),
+        html.H6('Over:', style={'marginLeft': '1.5em'}),
         dcc.RadioItems(
             id='tab-corr-incr-radio',
             options=[{'label': '{} day'.format(i), 'value': i}
@@ -37,7 +37,7 @@ tab_corr_layout = html.Div([
                 id='tab-corr-pca',
                 children='Enable PCA',
                 n_clicks=0,
-                style={'width': '150px', 'marginLeft': '5em'}),   
+                style={'width': '140px', 'marginLeft': '3em'}),   
                         
         ], style={'display': 'flex', 'marginTop': '1.5em'}), 
         
