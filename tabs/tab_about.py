@@ -17,7 +17,7 @@ tab_about_layout = html.Div([
             style={'font-weight':'bold'}
         ),
         html.H3(
-            'v(1.1.0)',
+            'v(1.1.3)',
             style={'marginLeft': '0.75em'}
         ),    
     ], style={'display': 'flex', 'marginLeft': '3em', 'marginTop': '1.5em'}),
