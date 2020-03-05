@@ -10,18 +10,21 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN mkdir /home/R_packages \
     && chmod a+rwx -R /home/R_packages
 
+#Make sure apt-get is up-to-date and install series of dependencies.
+RUN apt-get update -y \
+    && apt-get install -qy python3 python3-pip r-base \
+    && Rscript -e "install.packages('Sim.DiffProc', lib='/home/R_packages', \
+                                    repos='http://cran.wustl.edu/')"
+
 #Copy files to an "app/" directory.
 COPY . /app
 
 #Switch directory to the newly created app/
 WORKDIR /app
 
-#Make sure apt-get is up-to-date and install series of dependencies.
-RUN apt-get update -y \
-    && apt-get install -qy python3 python3-pip r-base \
-    && pip3 install -r requirements.txt \
-    && Rscript -e "install.packages('Sim.DiffProc', lib='/home/R_packages', \
-                                    repos='http://cran.wustl.edu/')"
+#Install requirements from file and clean up.
+RUN  pip3 install -r requirements.txt \
+	&& rm -rf /var/lib/apt/lists/*
 
 #open necessary ports to avoid gateway errors. Ensure that main.py server
 #matches the same port app.run_server(host='0.0.0.0', port=8080, debug=True).
