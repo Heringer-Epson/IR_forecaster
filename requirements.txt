@@ -11,7 +11,7 @@ future==0.18.2
 gunicorn==19.5.0
 itsdangerous==1.1.0
 Jinja2==2.10.3
-joblib==0.14.0
+joblib==1.2.0
 MarkupSafe==1.1.1
 numpy==1.16.4
 pandas==0.24.2
